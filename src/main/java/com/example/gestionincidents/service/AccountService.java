@@ -5,7 +5,7 @@ import com.example.gestionincidents.entity.Utilisateur;
 import com.example.gestionincidents.repository.UtilisateurRepository;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.provisioning.JdbcUserDetailsManager;   // 👈 IMPORTANT
+import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +24,7 @@ public class AccountService {
         this.utilisateurRepository = utilisateurRepository;
     }
 
-    public void registerCitizen(String nom, String prenom, String email, String rawPassword) {
+    public void registerCitizen(String nom, String prenom, String email, String phone, String rawPassword) {
         if (userDetailsManager.userExists(email)) {
             throw new IllegalArgumentException("Un compte existe déjà avec cet email");
         }
@@ -44,6 +44,7 @@ public class AccountService {
         u.setNom(nom);
         u.setPrenom(prenom);
         u.setEmail(email);
+        u.setPhone(phone);
         u.setMotDePasse(encoded);
         u.setRole(UserRole.CITOYEN);
 
@@ -73,4 +74,8 @@ public class AccountService {
 
         utilisateurRepository.save(u);
     }
+    public boolean userExists(String email) {
+        return userDetailsManager.userExists(email);
+    }
+
 }

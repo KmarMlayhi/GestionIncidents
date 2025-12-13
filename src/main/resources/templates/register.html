@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Inscription citoyen</title>
+</head>
+<body>
+<h2>Créer un compte citoyen</h2>
+
+<!-- Message d'erreur si l'email est déjà utilisé, etc. -->
+<div th:if="${error}">
+    <p th:text="${error}" style="color:red;"></p>
+</div>
+
+<form th:action="@{/register}" th:object="${form}" method="post">
+    <label>Nom :</label>
+    <input type="text" th:field="*{nom}" required>
+    <br>
+
+    <label>Prénom :</label>
+    <input type="text" th:field="*{prenom}" required>
+    <br>
+
+    <label>Email :</label>
+    <input type="email" th:field="*{email}" required>
+    <br>
+
+    <label>Télèphone :</label>
+    <input type="text" th:field="*{phone}" required>
+    <br>
+
+    <label>Mot de passe :</label>
+    <input type="password" th:field="*{password}" required>
+    <br><br>
+
+    <button type="submit">S'inscrire</button>
+</form>
+
+<a th:href="@{/login}">Déjà un compte ? Se connecter</a>
+</body>
+</html>
