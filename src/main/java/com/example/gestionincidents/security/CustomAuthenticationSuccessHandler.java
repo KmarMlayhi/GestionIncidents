@@ -18,6 +18,9 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                                         Authentication authentication)
             throws IOException, ServletException {
 
+        boolean isSuperAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN"));
+
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
@@ -27,15 +30,17 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         boolean isCitizen = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_CITOYEN"));
 
-        if (isAdmin) {
+        if (isSuperAdmin) {
+            response.sendRedirect("/superadmin/dashboard");
+        } else if (isAdmin) {
             response.sendRedirect("/admin");
         } else if (isAgent) {
             response.sendRedirect("/agent/dashboard");
         } else if (isCitizen) {
             response.sendRedirect("/citoyen/dashboard");
         } else {
-            // au cas où, fallback
-            response.sendRedirect("/");
+            // fallback si jamais un compte a un rôle inattendu
+            response.sendRedirect("/login?errorRole");
         }
     }
 }

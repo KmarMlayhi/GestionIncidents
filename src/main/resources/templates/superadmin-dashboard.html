@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Tableau de bord Super Admin</title>
+</head>
+<body>
+<h1>Super Admin - Tableau de bord</h1>
+<p>Ici, vous pouvez créer des administrateurs et des agents municipaux.</p>
+
+<!-- Messages de succès / erreur -->
+<div th:if="${successMessage}" style="color: green;">
+    <p th:text="${successMessage}"></p>
+</div>
+<div th:if="${errorMessage}" style="color: red;">
+    <p th:text="${errorMessage}"></p>
+</div>
+
+<h2>Créer un administrateur ou un agent</h2>
+
+<form th:action="@{/superadmin/create-user}" th:object="${form}" method="post">
+    <div>
+        <label>Nom :</label>
+        <input type="text" th:field="*{nom}" required>
+    </div>
+
+    <div>
+        <label>Prénom :</label>
+        <input type="text" th:field="*{prenom}" required>
+    </div>
+
+    <div>
+        <label>Email :</label>
+        <input type="email" th:field="*{email}" required>
+    </div>
+
+    <div>
+        <label>Téléphone :</label>
+        <input type="text" th:field="*{phone}">
+    </div>
+
+    <div>
+        <label>Rôle :</label>
+        <select th:field="*{role}" required>
+            <option value="" disabled selected>-- Choisir un rôle --</option>
+            <option value="ADMIN">Administrateur</option>
+            <option value="AGENT">Agent</option>
+        </select>
+    </div>
+
+    <div>
+        <button type="submit">Créer le compte</button>
+    </div>
+</form>
+
+<br>
+<a th:href="@{/logout}">Se déconnecter</a>
+</body>
+</html>

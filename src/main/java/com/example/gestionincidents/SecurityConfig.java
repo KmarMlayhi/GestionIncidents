@@ -27,8 +27,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/login", "/register", "/verify").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        // SUPER ADMIN : gestion des admins, configuration globale...
+                        .requestMatchers("/superadmin/**").hasRole("SUPER_ADMIN")
+                        // ADMIN : gestion des agents, incidents, etc. (SUPER_ADMIN y a accès aussi)
+                        .requestMatchers("/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
+                        // AGENT : traitement des incidents
                         .requestMatchers("/citoyen/**").hasRole("CITOYEN")
+                        // CITOYEN : espace citoyen
                         .requestMatchers("/agent/**").hasRole("AGENT")
                         .anyRequest().authenticated()
                 )
@@ -57,14 +62,14 @@ public class SecurityConfig {
         JdbcUserDetailsManager users = new JdbcUserDetailsManager(dataSource);
 
         // Créer un admin par défaut si pas encore présent
-        if (!users.userExists("admin")) {
-            UserDetails admin = User.withUsername("admin")
-                    .password(encoder.encode("admin123"))
-                    .roles("ADMIN")
+        if (!users.userExists("superadmin")) {
+            UserDetails admin = User.withUsername("superadmin")
+                    .password(encoder.encode("super123"))
+                    .roles("SUPER_ADMIN")
                     .build();
 
             users.createUser(admin);
-            System.out.println(">>> ADMIN JDBC créé : admin / admin123");
+            System.out.println(">>> SUPER ADMIN JDBC créé : superadmin  / super123");
         }
 
         return users;

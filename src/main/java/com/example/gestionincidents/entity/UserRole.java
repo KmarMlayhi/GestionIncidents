@@ -1,7 +1,8 @@
 package com.example.gestionincidents.entity;
 
 public enum UserRole {
-    CITOYEN,
+    SUPER_ADMIN,
+    ADMIN,
     AGENT,
-    ADMINISTRATEUR
+    CITOYEN
 }

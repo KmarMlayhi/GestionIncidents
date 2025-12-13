@@ -113,9 +113,6 @@ public class AuthController {
             return "verify";
         }
 
-        // (optionnel) vérifier qu'il n'est pas trop vieux
-        // if (vc.getCreatedAt().isBefore(LocalDateTime.now().minusMinutes(15))) { ... }
-
         // Créer vraiment le compte (users + authorities + utilisateur)
         accountService.registerCitizen(
                 vc.getNom(),
@@ -124,6 +121,10 @@ public class AuthController {
                 vc.getPhone(),
                 vc.getRawPassword()
         );
+        //Envoie du mail de bienvenue
+        String fullName = (vc.getPrenom() != null ? vc.getPrenom() + " " : "")
+                + (vc.getNom() != null ? vc.getNom() : "");
+        mailService.sendWelcomeEmail(vc.getEmail(), fullName.trim());
 
         // Supprimer la demande
         verificationCodeRepository.deleteByEmail(email);

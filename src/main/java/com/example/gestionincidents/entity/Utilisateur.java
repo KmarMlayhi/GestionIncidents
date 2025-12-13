@@ -21,6 +21,7 @@ public class Utilisateur {
     private String phone;
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 20)
     private UserRole role;
 
     // ----- Constructeur vide (obligatoire pour JPA) -----
