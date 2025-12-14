@@ -34,6 +34,7 @@ public class MailService {
         mailSender.send(message);
     }
 
+    //welcome mail to citizens
     public void sendWelcomeEmail(String to, String fullName) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
@@ -54,6 +55,7 @@ public class MailService {
         message.setText(texte);
         mailSender.send(message);
     }
+
     // Mail pour ADMIN / AGENT créés par le super admin
     public void sendStaffAccountEmail(String to,
                                       String fullName,
@@ -79,5 +81,6 @@ public class MailService {
         message.setText(texte);
         mailSender.send(message);
     }
+
 
 }

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Créer un compte (Super Admin)</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+</head>
+<body>
+<div class="dashboard-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-crown"></i>
+            </div>
+            <div class="app-name">Super Admin</div>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li>
+                <a th:href="@{/superadmin/dashboard}">
+                    <span class="menu-icon"><i class="fas fa-home"></i></span>
+                    <span class="menu-text">Tableau de bord</span>
+                </a>
+            </li>
+
+            <li>
+                <a th:href="@{/superadmin/create-user}" class="active">
+                    <span class="menu-icon"><i class="fas fa-user-plus"></i></span>
+                    <span class="menu-text">Créer un compte</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <span class="menu-icon"><i class="fas fa-user-shield"></i></span>
+                    <span class="menu-text">Affecter Agents-Admin</span>
+                </a>
+            </li>
+
+
+            <li>
+                <a href="#">
+                    <span class="menu-icon"><i class="fas fa-users-cog"></i></span>
+                    <span class="menu-text">Gérer les comptes</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    <span class="menu-icon"><i class="fas fa-cog"></i></span>
+                    <span class="menu-text">Paramètres globaux</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Déconnexion</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- NAVBAR -->
+        <nav class="navbar">
+            <div class="navbar-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="page-title">Créer un compte</div>
+            </div>
+
+            <div class="navbar-right">
+                <div class="navbar-actions">
+                    <div class="action-icon">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge"></span>
+                    </div>
+
+                    <div class="user-profile">
+                        <div class="user-avatar" th:text="${initials}">SA</div>
+                        <div class="user-info">
+                            <div class="user-name" th:text="${fullName}">Super Admin</div>
+                            <div class="user-role" th:text="${roleLabel}">Super administrateur</div>
+                        </div>
+                        <i class="fas fa-chevron-down"
+                           style="font-size: 12px; color: var(--text-gray);"></i>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- CONTENU : formulaire de création de compte -->
+        <div class="content">
+            <div style="width: 100%; max-width: 720px; margin: 0 auto;">
+
+                <!-- Messages -->
+                <div th:if="${successMessage}"
+                     style="background:#ecfdf3;border:1px solid #22c55e;color:#166534;
+                            padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:14px;">
+                    <i class="fas fa-check-circle" style="margin-right:8px;"></i>
+                    <span th:text="${successMessage}"></span>
+                </div>
+
+                <div th:if="${errorMessage}"
+                     style="background:#fef2f2;border:1px solid #ef4444;color:#b91c1c;
+                            padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:14px;">
+                    <i class="fas fa-exclamation-circle" style="margin-right:8px;"></i>
+                    <span th:text="${errorMessage}"></span>
+                </div>
+
+                <div style="background: #ffffff; border-radius: 12px; padding: 24px;
+                            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);">
+
+                    <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 8px; color:#0f172a;">
+                        Créer un administrateur ou un agent
+                    </h2>
+                    <p style="font-size: 14px; color:#64748b; margin-bottom: 20px;">
+                        Remplissez les informations ci-dessous. Un mot de passe provisoire sera généré
+                        automatiquement et envoyé par email à l’utilisateur.
+                    </p>
+
+                    <form th:action="@{/superadmin/create-user}" th:object="${form}" method="post">
+
+                        <div style="display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
+                            <div style="flex:1; min-width: 180px;">
+                                <label style="display:block; font-size:13px; font-weight:500; margin-bottom:4px;">
+                                    Nom
+                                </label>
+                                <input type="text" th:field="*{nom}" required
+                                       style="width:100%; padding:10px 12px; border-radius:8px;
+                                              border:1px solid #e2e8f0; font-size:14px;">
+                            </div>
+
+                            <div style="flex:1; min-width: 180px;">
+                                <label style="display:block; font-size:13px; font-weight:500; margin-bottom:4px;">
+                                    Prénom
+                                </label>
+                                <input type="text" th:field="*{prenom}" required
+                                       style="width:100%; padding:10px 12px; border-radius:8px;
+                                              border:1px solid #e2e8f0; font-size:14px;">
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block; font-size:13px; font-weight:500; margin-bottom:4px;">
+                                Email
+                            </label>
+                            <input type="email" th:field="*{email}" required
+                                   style="width:100%; padding:10px 12px; border-radius:8px;
+                                          border:1px solid #e2e8f0; font-size:14px;">
+                        </div>
+
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block; font-size:13px; font-weight:500; margin-bottom:4px;">
+                                Téléphone
+                            </label>
+                            <input type="text" th:field="*{phone}"
+                                   style="width:100%; padding:10px 12px; border-radius:8px;
+                                          border:1px solid #e2e8f0; font-size:14px;">
+                        </div>
+
+                        <div style="margin-bottom:20px;">
+                            <label style="display:block; font-size:13px; font-weight:500; margin-bottom:4px;">
+                                Rôle
+                            </label>
+                            <select th:field="*{role}" required
+                                    style="width:100%; padding:10px 12px; border-radius:8px;
+                                           border:1px solid #e2e8f0; font-size:14px;">
+                                <option value="" disabled selected>-- Choisir un rôle --</option>
+                                <option value="ADMIN">Administrateur</option>
+                                <option value="AGENT">Agent municipal</option>
+                            </select>
+                        </div>
+
+                        <div style="display:flex; justify-content:flex-end;">
+                            <button type="submit"
+                                    style="background:#2563eb; color:white; border:none; border-radius:8px;
+                                           padding:10px 18px; font-size:14px; font-weight:500; cursor:pointer;">
+                                Créer le compte
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.querySelector('.sidebar');
+
+    if (menuToggle) {
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+    }
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            window.location.href = '/logout';
+        });
+    }
+
+    const menuItems = document.querySelectorAll('.sidebar-menu a');
+    menuItems.forEach(item => {
+        item.addEventListener('click', () => {
+            menuItems.forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+
+            const menuText = item.querySelector('.menu-text').textContent;
+            document.querySelector('.page-title').textContent = menuText;
+
+            if (window.innerWidth <= 1024) {
+                sidebar.classList.remove('active');
+            }
+        });
+    });
+</script>
+</body>
+</html>

@@ -24,6 +24,8 @@ public class Utilisateur {
     @Column(length = 20)
     private UserRole role;
 
+
+
     // ----- Constructeur vide (obligatoire pour JPA) -----
     public Utilisateur() {
     }

@@ -1,10 +1,130 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord agent</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
 </head>
 <body>
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <div class="app-name">AgentPanel</div>
+        </div>
 
+        <ul class="sidebar-menu">
+            <li>
+                <a href="#" class="active">
+                    <span class="menu-icon"><i class="fas fa-home"></i></span>
+                    <span class="menu-text">Tableau de bord</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <span class="menu-icon"><i class="fas fa-tasks"></i></span>
+                    <span class="menu-text">Incidents assignés</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <span class="menu-icon"><i class="fas fa-map"></i></span>
+                    <span class="menu-text">Carte des incidents</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <span class="menu-icon"><i class="fas fa-history"></i></span>
+                    <span class="menu-text">Historique</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <form th:action="@{/logout}" method="post">
+                <button class="logout-btn" type="submit">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Déconnexion</span>
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <nav class="navbar">
+            <div class="navbar-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="page-title">Tableau de bord</div>
+            </div>
+
+            <div class="navbar-right">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Rechercher un incident...">
+                </div>
+
+                <div class="navbar-actions">
+                    <div class="action-icon">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge"></span>
+                    </div>
+
+                    <div class="user-profile">
+                        <div class="user-avatar" th:text="${initials}">AG</div>
+                        <div class="user-info">
+                            <div class="user-name" th:text="${fullName}">Agent municipal</div>
+                            <div class="user-role" th:text="${roleLabel}">Agent municipal</div>
+                        </div>
+                        <i class="fas fa-chevron-down"
+                           style="font-size: 12px; color: var(--text-gray);"></i>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="content">
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <h2 class="empty-title">Aucun incident à afficher</h2>
+                <p class="empty-description">
+                    Lorsque des incidents vous seront assignés,<br>
+                    ils apparaîtront ici pour traitement.
+                </p>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.querySelector('.sidebar');
+    menuToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+    });
+
+    const menuItems = document.querySelectorAll('.sidebar-menu a');
+    menuItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            menuItems.forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            const menuText = item.querySelector('.menu-text').textContent;
+            document.querySelector('.page-title').textContent = menuText;
+        });
+    });
+</script>
 </body>
 </html>
