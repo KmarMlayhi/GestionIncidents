@@ -1,5 +1,6 @@
 package com.example.gestionincidents.service;
 
+import com.example.gestionincidents.entity.Departement;
 import com.example.gestionincidents.entity.UserRole;
 import com.example.gestionincidents.entity.Utilisateur;
 import com.example.gestionincidents.repository.UtilisateurRepository;
@@ -74,7 +75,8 @@ public class AccountService {
     public String createAgentWithGeneratedPassword(String nom,
                                                    String prenom,
                                                    String email,
-                                                   String phone) {
+                                                   String phone,
+                                                   Departement departement) {
         if (userDetailsManager.userExists(email)) {
             throw new IllegalArgumentException("Un compte existe déjà avec cet email");
         }
@@ -99,6 +101,7 @@ public class AccountService {
         u.setPhone(phone);
         u.setMotDePasse(encoded);
         u.setRole(UserRole.AGENT);
+        u.setDepartement(departement);
 
         utilisateurRepository.save(u);
 
@@ -140,11 +143,11 @@ public class AccountService {
 
     // (Optionnel) anciennes méthodes qui ne renvoient rien,
     // si jamais tu les utilises ailleurs dans le code.
-    public void createAgent(String nom, String prenom, String email, String phone) {
-        createAgentWithGeneratedPassword(nom, prenom, email, phone);
-    }
+//    public void createAgent(String nom, String prenom, String email, String phone) {
+//        createAgentWithGeneratedPassword(nom, prenom, email, phone, departement );
+//    }
 
-    public void createAdmin(String nom, String prenom, String email, String phone) {
-        createAdminWithGeneratedPassword(nom, prenom, email, phone);
-    }
+//    public void createAdmin(String nom, String prenom, String email, String phone) {
+//        createAdminWithGeneratedPassword(nom, prenom, email, phone);
+//    }
 }

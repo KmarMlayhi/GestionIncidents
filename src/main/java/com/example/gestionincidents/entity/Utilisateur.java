@@ -24,6 +24,14 @@ public class Utilisateur {
     @Column(length = 20)
     private UserRole role;
 
+    // Admin responsable (pour les AGENTS uniquement)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "admin_id")
+    private Utilisateur administrateur;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 30)
+    private Departement departement;
 
 
     // ----- Constructeur vide (obligatoire pour JPA) -----
@@ -86,6 +94,21 @@ public class Utilisateur {
 
     public void setRole(UserRole role) {
         this.role = role;
+    }
+
+    public Utilisateur getAdministrateur() {
+        return administrateur;
+    }
+
+    public void setAdministrateur(Utilisateur administrateur) {
+        this.administrateur = administrateur;
+    }
+    public Departement getDepartement() {
+        return departement;
+    }
+
+    public void setDepartement(Departement departement) {
+        this.departement = departement;
     }
 }
 

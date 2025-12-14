@@ -1,15 +1,21 @@
 package com.example.gestionincidents.controller;
 
+import com.example.gestionincidents.entity.Departement;
 import com.example.gestionincidents.entity.UserRole;
 import com.example.gestionincidents.entity.Utilisateur;
 import com.example.gestionincidents.repository.UtilisateurRepository;
 import com.example.gestionincidents.service.AccountService;
+import com.example.gestionincidents.service.ConnectedUserInfoService;
 import com.example.gestionincidents.service.MailService;
+import com.example.gestionincidents.service.UserAssignmentService;
 import com.example.gestionincidents.web.AdminAgentForm;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/superadmin")
@@ -18,83 +24,26 @@ public class SuperAdminController {
     private final AccountService accountService;
     private final MailService mailService;
     private final UtilisateurRepository utilisateurRepository;
+    private final ConnectedUserInfoService connectedUserInfoService;
+    private final UserAssignmentService userAssignmentService;
 
     public SuperAdminController(AccountService accountService,
                                 MailService mailService,
-                                UtilisateurRepository utilisateurRepository) {
+                                ConnectedUserInfoService connectedUserInfoService,
+                                UtilisateurRepository utilisateurRepository,
+                                UserAssignmentService userAssignmentService) {
         this.accountService = accountService;
         this.mailService = mailService;
         this.utilisateurRepository = utilisateurRepository;
+        this.connectedUserInfoService = connectedUserInfoService;
+        this.userAssignmentService = userAssignmentService;
     }
-
-    /** Ajoute fullName / initials / roleLabel pour le super admin connecté */
-    private void addConnectedUserInfo(Model model, Authentication authentication) {
-        String email = authentication.getName();
-
-        // On essaie de charger l'utilisateur métier
-        Utilisateur u = utilisateurRepository.findByEmail(email)
-                .orElseGet(() -> {
-                    // S'il n'existe pas encore dans la table utilisateur,
-                    // on le crée "à la volée" avec un rôle basé sur ses authorities
-                    Utilisateur nouveau = new Utilisateur();
-                    nouveau.setEmail(email);
-
-                    // Petit mapping authorities -> UserRole
-                    UserRole role = UserRole.CITOYEN; // valeur par défaut
-                    String authority = authentication.getAuthorities().stream()
-                            .findFirst()
-                            .map(a -> a.getAuthority())      // "ROLE_SUPER_ADMIN"
-                            .orElse("ROLE_CITOYEN");
-
-                    if (authority.equals("ROLE_SUPER_ADMIN")) role = UserRole.SUPER_ADMIN;
-                    else if (authority.equals("ROLE_ADMIN")) role = UserRole.ADMIN;
-                    else if (authority.equals("ROLE_AGENT")) role = UserRole.AGENT;
-
-                    nouveau.setRole(role);
-
-                    nouveau.setNom("Super Admin");   // pour le cas superadmin, ça ira
-                    nouveau.setPrenom(null);
-
-                    return utilisateurRepository.save(nouveau);
-                });
-
-        // Ensuite, le reste de ton code (fullName, initials, roleLabel) reste pareil
-        String fullName = (u.getPrenom() != null ? u.getPrenom() + " " : "")
-                + (u.getNom() != null ? u.getNom() : "");
-
-        String initials = "";
-        if (u.getPrenom() != null && !u.getPrenom().isEmpty()) {
-            initials += u.getPrenom().charAt(0);
-        }
-        if (u.getNom() != null && !u.getNom().isEmpty()) {
-            initials += u.getNom().charAt(0);
-        }
-        initials = initials.toUpperCase();
-
-        String roleLabel;
-        if (u.getRole() == UserRole.SUPER_ADMIN) {
-            roleLabel = "Super administrateur";
-        } else if (u.getRole() == UserRole.ADMIN) {
-            roleLabel = "Administrateur";
-        } else if (u.getRole() == UserRole.AGENT) {
-            roleLabel = "Agent municipal";
-        } else if (u.getRole() == UserRole.CITOYEN) {
-            roleLabel = "Citoyen";
-        } else {
-            roleLabel = u.getRole().name();
-        }
-
-        model.addAttribute("fullName", fullName);
-        model.addAttribute("initials", initials);
-        model.addAttribute("roleLabel", roleLabel);
-    }
-
 
     // 🟦 1) Dashboard super admin (pas de formulaire ici)
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication authentication) {
 
-        addConnectedUserInfo(model, authentication);
+        connectedUserInfoService.addConnectedUserInfo(model, authentication);
 
         return "superadmin-dashboard";   // templates/superadmin-dashboard.html
     }
@@ -106,7 +55,7 @@ public class SuperAdminController {
                                      @RequestParam(value = "success", required = false) String success,
                                      @RequestParam(value = "error", required = false) String error) {
 
-        addConnectedUserInfo(model, authentication);
+        connectedUserInfoService.addConnectedUserInfo(model, authentication);
 
         // Objet formulaire
         model.addAttribute("form", new AdminAgentForm());
@@ -128,6 +77,7 @@ public class SuperAdminController {
             String msg = switch (error) {
                 case "duplicateEmail" -> "Un compte existe déjà avec cet email.";
                 case "creationFailed" -> "Une erreur est survenue lors de la création du compte.";
+                case "missingDepartment" -> "Veuillez sélectionner un département pour l’agent municipal.";
                 default -> null;
             };
             if (msg != null) {
@@ -168,12 +118,16 @@ public class SuperAdminController {
                 successCode = "adminCreated";
 
             } else if ("AGENT".equalsIgnoreCase(form.getRole())) {
-
+                if (form.getDepartement() == null || form.getDepartement().isBlank()) {
+                    return "redirect:/superadmin/create-user?error=missingDepartment";
+                }
+                Departement departement = Departement.valueOf(form.getDepartement());
                 rawPassword = accountService.createAgentWithGeneratedPassword(
                         form.getNom(),
                         form.getPrenom(),
                         form.getEmail(),
-                        form.getPhone()
+                        form.getPhone(),
+                        departement
                 );
                 roleLabel = "Agent municipal";
                 successCode = "agentCreated";
@@ -200,5 +154,50 @@ public class SuperAdminController {
             e.printStackTrace();
             return "redirect:/superadmin/create-user?error=creationFailed";
         }
+    }
+    // 🔹 Page d'affectation Admin ↔ Agents
+    @GetMapping("/affectations")
+    public String showAffectationPage(Model model,
+                                      Authentication authentication,
+                                      @RequestParam(value = "success", required = false) String success,
+                                      @RequestParam(value = "error", required = false) String error) {
+
+        connectedUserInfoService.addConnectedUserInfo(model, authentication);
+        List<Utilisateur> admins = userAssignmentService.getAllAdmins();
+        List<Utilisateur> agents = userAssignmentService.getAllAgents(); // ou getAgentsWithoutAdmin()
+
+        model.addAttribute("admins", admins);
+        model.addAttribute("agents", agents);
+
+        if (success != null) {
+            model.addAttribute("successMessage", success);
+        }
+        if (error != null) {
+            model.addAttribute("errorMessage", error);
+        }
+
+        return "superadmin-affectations";   // nom du template Thymeleaf
+    }
+
+    // 🔹 Traitement de l'affectation
+    @PostMapping("/affectations")
+    public String assignAgents(@RequestParam("adminId") Long adminId,
+                               @RequestParam(name = "agentIds", required = false) List<Long> agentIds,
+                               RedirectAttributes redirectAttributes) {
+
+        if (agentIds == null || agentIds.isEmpty()) {
+            redirectAttributes.addAttribute("error", "Veuillez sélectionner au moins un agent.");
+            return "redirect:/superadmin/affectations";
+        }
+
+        try {
+            userAssignmentService.assignAgentsToAdmin(adminId, agentIds);
+            redirectAttributes.addAttribute("success", "Agents affectés avec succès à l'administrateur.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttributes.addAttribute("error", "Erreur lors de l'affectation : " + e.getMessage());
+        }
+
+        return "redirect:/superadmin/affectations";
     }
 }

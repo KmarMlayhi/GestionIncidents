@@ -6,10 +6,17 @@ public class AdminAgentForm {
     private String prenom;
     private String email;
     private String phone;
-
     private String role; // "ADMIN" ou "AGENT"
+    private String departement;
 
     // Getters et setters
+    public String getDepartement() {
+        return departement;
+    }
+
+    public void setDepartement(String departement) {
+        this.departement = departement;
+    }
 
     public String getNom() {
         return nom;

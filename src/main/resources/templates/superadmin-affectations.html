@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Affecter Agents - Super Admin</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <!-- CSS commun -->
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+
+    <!-- CSS spécifique à cette page -->
+    <style>
+        /* Styles spécifiques pour la page d'affectation */
+        .content-affectations {
+            padding: 32px;
+            min-height: calc(100vh - var(--navbar-height));
+            display: flex;
+            flex-direction: column;      /* empile le header, stats, carte */
+            align-items: stretch;        /* prend toute la largeur dispo */
+            justify-content: flex-start; /* commence en haut, plus centré verticalement */
+            gap: 16px;
+            .page-header {
+            margin-bottom: 16px;
+        }
+
+        .page-title-main {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .page-title-main i {
+            color: var(--primary);
+            margin-right: 12px;
+        }
+
+        .page-subtitle {
+            color: var(--text-gray);
+            font-size: 15px;
+            line-height: 1.5;
+            max-width: 800px;
+            margin-bottom: 8px;
+        }
+
+        /* Stats rapides - juste sous le texte d’intro */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin: 16px 0 24px 0;
+        }
+
+        .stat-card {
+            background: var(--bg-white);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+            border: 1px solid var(--border-light);
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .stat-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-gray);
+        }
+
+        /* Cartes */
+        .card {
+            background: var(--bg-white);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-light);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            margin-bottom: 24px;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        /* Formulaires */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group select,
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="password"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            font-size: 15px;
+            transition: var(--transition);
+            background-color: var(--bg-white);
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-hint {
+            display: block;
+            margin-top: 6px;
+            color: var(--text-gray);
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        /* Tableau */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light);
+            margin: 24px 0;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .table thead {
+            background-color: #f8fafc;
+        }
+
+        .table th {
+            padding: 16px 20px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 14px;
+            border-bottom: 1px solid var(--border-light);
+            white-space: nowrap;
+        }
+
+        .table td {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        .table tbody tr {
+            transition: var(--transition);
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Checkbox custom */
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .custom-checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid var(--border-light);
+            background-color: var(--bg-white);
+            cursor: pointer;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .custom-checkbox.checked {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .custom-checkbox.checked::after {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 2px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        /* Badge admin actuel */
+        .admin-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+            background-color: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .admin-badge.none {
+            background-color: #f1f5f9;
+            color: #64748b;
+        }
+
+        /* Boutons */
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 32px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .primary-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .primary-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .primary-btn:active {
+            transform: translateY(0);
+        }
+
+        .primary-btn:disabled {
+            background-color: var(--border-light);
+            color: var(--text-gray);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Alerts */
+        .alert-success,
+        .alert-error {
+            padding: 16px 20px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert-success {
+            background-color: #f0fdf4;
+            color: #166534;
+            border-left: 4px solid #22c55e;
+        }
+
+        .alert-error {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        /* Sélection multiple */
+        .selection-info {
+            background-color: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+            margin: 12px 0 20px 0;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .selection-info.visible {
+            display: flex;
+        }
+
+        .selection-count {
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        .clear-selection {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+        }
+
+        .clear-selection:hover {
+            background-color: rgba(37, 99, 235, 0.1);
+        }
+
+        /* Note importante */
+        .info-card {
+            background-color: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-top: 8px;
+        }
+
+        .info-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .info-icon {
+            color: #0369a1;
+            font-size: 18px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .info-title {
+            margin-bottom: 8px;
+            color: #0369a1;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .info-text {
+            color: #0c4a6e;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+
+            .card-body {
+                padding: 20px;
+            }
+
+            .table-wrapper {
+                margin: 20px -20px;
+                border-radius: 0;
+                border-left: none;
+                border-right: none;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .primary-btn {
+                width: 100%;
+            }
+
+            .quick-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .page-title-main {
+                font-size: 20px;
+            }
+
+            .page-subtitle {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stat-card {
+                padding: 16px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+
+            .selection-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .clear-selection {
+                align-self: flex-end;
+            }
+        }}
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-crown"></i>
+            </div>
+            <div class="app-name">Super Admin</div>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li>
+                <a th:href="@{/superadmin/dashboard}">
+                    <span class="menu-icon"><i class="fas fa-home"></i></span>
+                    <span class="menu-text">Tableau de bord</span>
+                </a>
+            </li>
+
+            <li>
+                <a th:href="@{/superadmin/create-user}">
+                    <span class="menu-icon"><i class="fas fa-user-plus"></i></span>
+                    <span class="menu-text">Créer un compte</span>
+                </a>
+            </li>
+
+            <li>
+                <a th:href="@{/superadmin/affectations}" class="active">
+                    <span class="menu-icon"><i class="fas fa-user-shield"></i></span>
+                    <span class="menu-text">Affecter Agents</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    <span class="menu-icon"><i class="fas fa-users-cog"></i></span>
+                    <span class="menu-text">Gérer les comptes</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="#">
+                    <span class="menu-icon"><i class="fas fa-cog"></i></span>
+                    <span class="menu-text">Paramètres</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Déconnexion</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- NAVBAR -->
+        <nav class="navbar">
+            <div class="navbar-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="page-title">Affecter Agents</div>
+            </div>
+
+            <div class="navbar-right">
+                <div class="navbar-actions">
+                    <div class="action-icon">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge"></span>
+                    </div>
+
+                    <!-- Profil super admin dynamique -->
+                    <div class="user-profile">
+                        <div class="user-avatar" th:text="${initials}">SA</div>
+
+                        <div class="user-info">
+                            <div class="user-name" th:text="${fullName}">Super Admin</div>
+                            <div class="user-role" th:text="${roleLabel}">Super administrateur</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- CONTENU -->
+        <div class="content content-affectations">
+            <!-- En-tête de page -->
+            <div class="page-header">
+                <h2 class="page-title-main">
+                    <i class="fas fa-user-shield"></i>
+                    Affecter des agents à un administrateur
+                </h2>
+                <p class="page-subtitle">
+                    Sélectionnez un administrateur responsable et associez-lui les agents appropriés.
+                    Vous pouvez affecter plusieurs agents simultanément.
+                </p>
+            </div>
+
+            <!-- Stats rapides directement sous le texte -->
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <div class="stat-value" th:text="${agents.size()}">0</div>
+                    <div class="stat-label">Agents disponibles</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" th:text="${admins.size()}">0</div>
+                    <div class="stat-label">Administrateurs</div>
+                </div>
+            </div>
+
+            <!-- Messages de succès / erreur -->
+            <div th:if="${successMessage}" class="alert-success">
+                <i class="fas fa-check-circle"></i>
+                <span th:text="${successMessage}"></span>
+            </div>
+            <div th:if="${errorMessage}" class="alert-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <!-- Information sur la sélection -->
+            <div class="selection-info" id="selectionInfo">
+                <div>
+                    <span class="selection-count" id="selectedCount">0</span> agent(s) sélectionné(s)
+                </div>
+                <button type="button" class="clear-selection" id="clearSelection">
+                    <i class="fas fa-times"></i>
+                    Tout désélectionner
+                </button>
+            </div>
+
+            <!-- Carte principale -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-link"></i>
+                        Formulaire d'affectation
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/superadmin/affectations}" method="post" id="affectationForm">
+
+                        <!-- Choix de l'admin -->
+                        <div class="form-group">
+                            <label for="adminId">
+                                <i class="fas fa-user-tie" style="margin-right: 6px;"></i>
+                                Administrateur responsable
+                            </label>
+                            <select id="adminId" name="adminId" required class="admin-select">
+                                <option value="" disabled selected>-- Sélectionner un administrateur --</option>
+                                <option th:each="admin : ${admins}"
+                                        th:value="${admin.id}"
+                                        th:text="${admin.prenom + ' ' + admin.nom + ' • ' + admin.email}">
+                                </option>
+                            </select>
+                            <small class="form-hint">
+                                Cet administrateur supervisera les agents sélectionnés et recevra les rapports correspondants.
+                            </small>
+                        </div>
+
+                        <!-- Liste des agents -->
+                        <div class="table-wrapper">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th style="width: 60px; text-align: center;">
+                                        <div class="checkbox-container">
+                                            <div class="custom-checkbox" id="selectAll"></div>
+                                        </div>
+                                    </th>
+                                    <th>Nom &amp; Prénom</th>
+                                    <th>Email</th>
+                                    <th>Admin actuel</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="agent,iter : ${agents}" class="agent-row">
+                                    <td style="text-align: center;">
+                                        <div class="checkbox-container">
+                                            <!-- checkbox visuelle -->
+                                            <div class="custom-checkbox"
+                                                 th:attr="data-agent-id=${agent.id}"></div>
+                                            <!-- checkbox réelle envoyée au backend -->
+                                            <input type="checkbox" name="agentIds"
+                                                   th:value="${agent.id}"
+                                                   style="display:none;"
+                                                   class="agent-checkbox">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong th:text="${agent.prenom + ' ' + agent.nom}">Nom Prénom</strong>
+                                    </td>
+                                    <td th:text="${agent.email}">email@example.com</td>
+                                    <td>
+                                        <span th:if="${agent.administrateur != null}"
+                                              class="admin-badge"
+                                              th:text="${agent.administrateur.prenom + ' ' + agent.administrateur.nom}">
+                                            Admin actuel
+                                        </span>
+                                        <span th:if="${agent.administrateur == null}"
+                                              class="admin-badge none">
+                                            Non affecté
+                                        </span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Bouton d'action -->
+                        <div class="form-actions">
+                            <button type="submit" class="primary-btn" id="submitBtn" disabled>
+                                <i class="fas fa-user-check"></i>
+                                Affecter les agents sélectionnés
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Note importante -->
+            <div class="info-card">
+                <div class="info-content">
+                    <i class="fas fa-info-circle info-icon"></i>
+                    <div>
+                        <h4 class="info-title">Information importante</h4>
+                        <p class="info-text">
+                            L'affectation d'un agent à un nouvel administrateur remplacera son affectation actuelle.
+                            L'agent pourra être notifié de ce changement si tu ajoutes une notification plus tard.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script>
+    // Menu burger
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.querySelector('.sidebar');
+
+    if (menuToggle) {
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+    }
+
+    // Déconnexion
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            window.location.href = '/logout';
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const visualCheckboxes = document.querySelectorAll('.custom-checkbox[data-agent-id]');
+        const hiddenCheckboxes = document.querySelectorAll('.agent-checkbox');
+        const selectionInfo = document.getElementById('selectionInfo');
+        const selectedCount = document.getElementById('selectedCount');
+        const clearSelectionBtn = document.getElementById('clearSelection');
+        const submitBtn = document.getElementById('submitBtn');
+        const adminSelect = document.getElementById('adminId');
+
+        // Sélectionner / désélectionner tous
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('click', function() {
+                const isChecked = this.classList.contains('checked');
+
+                visualCheckboxes.forEach(cb => {
+                    cb.classList.toggle('checked', !isChecked);
+                });
+
+                hiddenCheckboxes.forEach(cb => {
+                    cb.checked = !isChecked;
+                });
+
+                updateSelectionInfo();
+                updateSubmitButton();
+            });
+        }
+
+        // Gestion des checkboxes individuelles
+        visualCheckboxes.forEach((checkbox, index) => {
+            checkbox.addEventListener('click', function(e) {
+                e.stopPropagation(); // pour éviter le clic sur la ligne
+                this.classList.toggle('checked');
+                hiddenCheckboxes[index].checked = this.classList.contains('checked');
+
+                updateSelectAllState();
+                updateSelectionInfo();
+                updateSubmitButton();
+            });
+        });
+
+        // Mettre à jour l'état de "Sélectionner tout"
+        function updateSelectAllState() {
+            if (!selectAllCheckbox) return;
+
+            const checkedCount = document.querySelectorAll('.custom-checkbox.checked[data-agent-id]').length;
+            const totalCount = visualCheckboxes.length;
+
+            if (checkedCount === totalCount && totalCount > 0) {
+                selectAllCheckbox.classList.add('checked');
+            } else {
+                selectAllCheckbox.classList.remove('checked');
+            }
+        }
+
+        // Mettre à jour les infos de sélection
+        function updateSelectionInfo() {
+            const checkedCount = document.querySelectorAll('.custom-checkbox.checked[data-agent-id]').length;
+
+            if (checkedCount > 0) {
+                selectionInfo.classList.add('visible');
+                selectedCount.textContent = checkedCount;
+            } else {
+                selectionInfo.classList.remove('visible');
+            }
+        }
+
+        // Mettre à jour l'état du bouton
+        function updateSubmitButton() {
+            const checkedCount = document.querySelectorAll('.custom-checkbox.checked[data-agent-id]').length;
+            const adminSelected = adminSelect.value !== '';
+
+            submitBtn.disabled = !(checkedCount > 0 && adminSelected);
+
+            if (!submitBtn.disabled) {
+                submitBtn.innerHTML = `<i class="fas fa-user-check"></i> Affecter ${checkedCount} agent(s)`;
+            } else {
+                submitBtn.innerHTML = `<i class="fas fa-user-check"></i> Affecter les agents sélectionnés`;
+            }
+        }
+
+        // Tout désélectionner
+        if (clearSelectionBtn) {
+            clearSelectionBtn.addEventListener('click', function() {
+                visualCheckboxes.forEach(cb => cb.classList.remove('checked'));
+                hiddenCheckboxes.forEach(cb => cb.checked = false);
+                if (selectAllCheckbox) selectAllCheckbox.classList.remove('checked');
+                updateSelectionInfo();
+                updateSubmitButton();
+            });
+        }
+
+        // Quand l'admin change
+        if (adminSelect) {
+            adminSelect.addEventListener('change', updateSubmitButton);
+        }
+
+        // Soumission avec confirmation
+        const affectationForm = document.getElementById('affectationForm');
+        if (affectationForm) {
+            affectationForm.addEventListener('submit', function(e) {
+                const checkedCount = document.querySelectorAll('.custom-checkbox.checked[data-agent-id]').length;
+                const adminSelected = adminSelect.value !== '';
+
+                if (!adminSelected) {
+                    e.preventDefault();
+                    alert('Veuillez sélectionner un administrateur.');
+                    return;
+                }
+
+                if (checkedCount === 0) {
+                    e.preventDefault();
+                    alert('Veuillez sélectionner au moins un agent.');
+                    return;
+                }
+
+                const adminName = adminSelect.options[adminSelect.selectedIndex].text;
+                const confirmed = confirm(`Vous allez affecter ${checkedCount} agent(s) à ${adminName}. Confirmer ?`);
+
+                if (!confirmed) {
+                    e.preventDefault();
+                }
+            });
+        }
+
+        // Clic sur la ligne = toggle la checkbox
+        const agentRows = document.querySelectorAll('.agent-row');
+        agentRows.forEach((row) => {
+            row.addEventListener('click', function(e) {
+                if (e.target.closest('.custom-checkbox')) return;
+
+                const checkbox = this.querySelector('.custom-checkbox');
+                if (checkbox) {
+                    checkbox.click();
+                }
+            });
+        });
+
+        // init
+        updateSelectAllState();
+        updateSelectionInfo();
+        updateSubmitButton();
+    });
+</script>
+</body>
+</html>
