@@ -113,7 +113,8 @@ public class AccountService {
     public String createAdminWithGeneratedPassword(String nom,
                                                    String prenom,
                                                    String email,
-                                                   String phone) {
+                                                   String phone,
+                                                   Departement departement) {
         if (userDetailsManager.userExists(email)) {
             throw new IllegalArgumentException("Un compte existe déjà avec cet email");
         }
@@ -134,6 +135,7 @@ public class AccountService {
         u.setPhone(phone);
         u.setMotDePasse(encoded);
         u.setRole(UserRole.ADMIN);
+        u.setDepartement(departement);
 
         utilisateurRepository.save(u);
 

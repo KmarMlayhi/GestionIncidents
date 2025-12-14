@@ -107,12 +107,13 @@ public class SuperAdminController {
 
             // 2) Choix du rôle : ADMIN ou AGENT
             if ("ADMIN".equalsIgnoreCase(form.getRole())) {
-
+                Departement departement = Departement.valueOf(form.getDepartement());
                 rawPassword = accountService.createAdminWithGeneratedPassword(
                         form.getNom(),
                         form.getPrenom(),
                         form.getEmail(),
-                        form.getPhone()
+                        form.getPhone(),
+                        departement
                 );
                 roleLabel = "Administrateur";
                 successCode = "adminCreated";

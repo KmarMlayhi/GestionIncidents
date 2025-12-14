@@ -582,13 +582,14 @@
             <!-- Stats rapides directement sous le texte -->
             <div class="quick-stats">
                 <div class="stat-card">
-                    <div class="stat-value" th:text="${agents.size()}">0</div>
-                    <div class="stat-label">Agents disponibles</div>
-                </div>
-                <div class="stat-card">
                     <div class="stat-value" th:text="${admins.size()}">0</div>
                     <div class="stat-label">Administrateurs</div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-value" th:text="${agents.size()}">0</div>
+                    <div class="stat-label">Agents disponibles</div>
+                </div>
+
             </div>
 
             <!-- Messages de succès / erreur -->
@@ -633,7 +634,7 @@
                                 <option value="" disabled selected>-- Sélectionner un administrateur --</option>
                                 <option th:each="admin : ${admins}"
                                         th:value="${admin.id}"
-                                        th:text="${admin.prenom + ' ' + admin.nom + ' • ' + admin.email}">
+                                        th:text="${admin.prenom + ' ' + admin.nom + ' • ' + admin.email  + ' • ' + admin.departement}">
                                 </option>
                             </select>
                             <small class="form-hint">
@@ -653,6 +654,7 @@
                                     </th>
                                     <th>Nom &amp; Prénom</th>
                                     <th>Email</th>
+                                    <th>Département</th>
                                     <th>Admin actuel</th>
                                 </tr>
                                 </thead>
@@ -674,6 +676,13 @@
                                         <strong th:text="${agent.prenom + ' ' + agent.nom}">Nom Prénom</strong>
                                     </td>
                                     <td th:text="${agent.email}">email@example.com</td>
+                                    <td>
+                                        <span class="admin-badge"
+                                              th:text="${agent.departement}">
+                                            Département
+                                        </span>
+                                    </td>
+
                                     <td>
                                         <span th:if="${agent.administrateur != null}"
                                               class="admin-badge"

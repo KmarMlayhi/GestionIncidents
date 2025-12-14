@@ -249,7 +249,7 @@
                                 <div class="form-group" id="departementGroup" style="display:none;">
                                     <label for="departementSelect">
                                         <i class="fas fa-building"></i>
-                                        Département de l’agent
+                                        Département :
                                     </label>
                                     <select th:field="*{departement}" id="departementSelect">
                                         <option value="" disabled selected>-- Choisir un département --</option>
@@ -316,26 +316,22 @@
     document.addEventListener("DOMContentLoaded", function () {
         const roleSelect = document.getElementById("roleSelect");
         const departementGroup = document.getElementById("departementGroup");
-        const departementSelect = document.getElementById("departementSelect");
 
         function toggleDepartement() {
-            if (!roleSelect) return;
+            if (!roleSelect.value) {
+                departementGroup.style.display = "none";
+                return;
+            }
 
-            if (roleSelect.value === "AGENT") {
+            if (roleSelect.value === "ADMIN" || roleSelect.value === "AGENT") {
                 departementGroup.style.display = "block";
             } else {
                 departementGroup.style.display = "none";
-                if (departementSelect) {
-                    departementSelect.value = "";
-                }
             }
         }
 
-        if (roleSelect) {
-            // Pour le cas où la page est rechargée avec un rôle déjà rempli
-            toggleDepartement();
-            roleSelect.addEventListener("change", toggleDepartement);
-        }
+        toggleDepartement();
+        roleSelect.addEventListener("change", toggleDepartement);
     });
 </script>
 </body>
