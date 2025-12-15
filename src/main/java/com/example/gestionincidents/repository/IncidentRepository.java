@@ -11,4 +11,6 @@ public interface IncidentRepository extends JpaRepository<Incident, Long> {
     List<Incident> findByEtat(EtatIncident etat);
 
     List<Incident> findByQuartier(Quartier quartier);
+    // Pour récupérer tous les incidents d’un citoyen
+    List<Incident> findByCitoyen(Utilisateur citoyen);
 }

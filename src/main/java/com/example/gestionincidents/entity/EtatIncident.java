@@ -1,9 +1,10 @@
 package com.example.gestionincidents.entity;
 
 public enum EtatIncident {
-    SIGNALE,
+
+    NOUVEAU,
     PRISE_EN_CHARGE,
     EN_RESOLUTION,
     RESOLUE,
-    CLOTURE
+    EN_ATTENTE, CLOTURE
 }
