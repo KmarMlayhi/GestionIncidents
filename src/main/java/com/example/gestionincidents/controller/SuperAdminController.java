@@ -1,7 +1,6 @@
 package com.example.gestionincidents.controller;
 
 import com.example.gestionincidents.entity.Departement;
-import com.example.gestionincidents.entity.UserRole;
 import com.example.gestionincidents.entity.Utilisateur;
 import com.example.gestionincidents.repository.UtilisateurRepository;
 import com.example.gestionincidents.service.AccountService;

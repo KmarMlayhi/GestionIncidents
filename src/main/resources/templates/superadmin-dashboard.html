@@ -61,10 +61,12 @@
         </ul>
 
         <div class="sidebar-footer">
-            <button class="logout-btn" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Déconnexion</span>
-            </button>
+            <form th:action="@{/logout}" method="post">
+                <button class="logout-btn" type="submit">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Déconnexion</span>
+                </button>
+            </form>
         </div>
     </aside>
 
@@ -131,13 +133,6 @@
     if (menuToggle) {
         menuToggle.addEventListener('click', () => {
             sidebar.classList.toggle('active');
-        });
-    }
-
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            window.location.href = '/logout';
         });
     }
 

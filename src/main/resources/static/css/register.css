@@ -1,0 +1,319 @@
+
+/* Styles spécifiques à l'inscription  */
+.register-container {
+    width: 100%;
+    max-width: 900px; /* Plus large pour la disposition horizontale */
+    animation: fadeIn 0.5s ease-out;
+}
+
+.register-card {
+    background-color: var(--bg-white);
+    border-radius: var(--radius-md);
+    padding: 40px;
+    box-shadow: 0 10px 40px rgba(15, 23, 42, 0.1);
+    border: 1px solid var(--border-light);
+    display: flex;
+    gap: 40px;
+    min-height: 580px;
+}
+
+.register-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.register-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.register-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.register-logo {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    color: white;
+    font-size: 32px;
+}
+
+.register-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+
+.register-subtitle {
+    font-size: 15px;
+    color: var(--text-gray);
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.register-form {
+    margin-top: 10px;
+}
+
+.form-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.form-row .form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.terms-group {
+    margin-top: 20px;
+    padding: 16px;
+    background-color: rgba(37, 99, 235, 0.03);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-light);
+}
+
+.terms-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--text-dark);
+    cursor: pointer;
+}
+
+.terms-checkbox input[type="checkbox"] {
+    margin-top: 3px;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--primary);
+}
+
+.terms-text {
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.terms-text a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.terms-text a:hover {
+    text-decoration: underline;
+}
+
+.register-button {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.register-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--primary-light), var(--primary));
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.25);
+}
+
+.register-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.register-footer {
+    text-align: center;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-light);
+}
+
+.login-link {
+    font-size: 14px;
+    color: var(--text-gray);
+}
+
+.login-link a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+.benefits-section {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(37, 99, 235, 0.02));
+    border-radius: var(--radius-md);
+    padding: 30px;
+    border-left: 4px solid var(--primary);
+    height: fit-content;
+}
+
+.benefits-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.benefits-title i {
+    font-size: 20px;
+}
+
+.benefits-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.benefits-list li {
+    font-size: 14px;
+    color: var(--text-dark);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(37, 99, 235, 0.1);
+}
+
+.benefits-list li:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.benefits-list li i {
+    color: var(--primary);
+    font-size: 14px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    background: rgba(37, 99, 235, 0.1);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.benefits-description {
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    .register-container {
+        max-width: 480px;
+    }
+
+    .register-card {
+        flex-direction: column;
+        padding: 30px 24px;
+        gap: 30px;
+    }
+
+    .register-logo {
+        width: 70px;
+        height: 70px;
+        font-size: 28px;
+    }
+
+    .register-title {
+        font-size: 24px;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .benefits-section {
+        padding: 24px;
+    }
+}
+
+.password-requirements {
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--text-gray);
+    background: rgba(37, 99, 235, 0.03);
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--primary);
+}
+
+.requirement {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.requirement:last-child {
+    margin-bottom: 0;
+}
+
+.requirement i {
+    font-size: 12px;
+}
+
+.requirement.valid {
+    color: var(--success);
+}
+
+.requirement.invalid {
+    color: var(--text-gray);
+}
+
+.phone-format {
+    font-size: 12px;
+    color: var(--text-gray);
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.phone-format i {
+    color: var(--primary);
+}
+
+.form-note {
+    font-size: 12px;
+    color: var(--text-gray);
+    margin-top: 8px;
+    font-style: italic;
+}

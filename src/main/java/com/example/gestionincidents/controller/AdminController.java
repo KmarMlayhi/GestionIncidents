@@ -1,67 +1,86 @@
 package com.example.gestionincidents.controller;
 
-import com.example.gestionincidents.entity.UserRole;
-import com.example.gestionincidents.entity.Utilisateur;
+import com.example.gestionincidents.entity.*;
+import com.example.gestionincidents.repository.IncidentRepository;
 import com.example.gestionincidents.repository.UtilisateurRepository;
+import com.example.gestionincidents.service.ConnectedUserInfoService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.Collections;
+import java.util.List;
+
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
 
+    private final ConnectedUserInfoService connectedUserInfoService;
     private final UtilisateurRepository utilisateurRepository;
+    private final IncidentRepository incidentRepository;
 
-    public AdminController(UtilisateurRepository utilisateurRepository) {
+    public AdminController(ConnectedUserInfoService connectedUserInfoService,
+                           UtilisateurRepository utilisateurRepository,
+                           IncidentRepository incidentRepository) {
+        this.connectedUserInfoService = connectedUserInfoService;
         this.utilisateurRepository = utilisateurRepository;
+        this.incidentRepository = incidentRepository;
     }
 
+    // Dashboard simple
     @GetMapping
     public String adminHome(Model model, Authentication authentication) {
-
-        // 1) Récupérer l'email de l'utilisateur connecté (username = email)
-        String email = authentication.getName();
-
-        // 2) Charger l'utilisateur métier depuis la base
-        Utilisateur u = utilisateurRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable : " + email));
-
-        // 3) Construire le nom complet
-        String fullName = (u.getPrenom() != null ? u.getPrenom() + " " : "")
-                + (u.getNom() != null ? u.getNom() : "");
-
-        // 4) Construire les initiales (ex : "AD")
-        String initials = "";
-        if (u.getPrenom() != null && !u.getPrenom().isEmpty()) {
-            initials += u.getPrenom().charAt(0);
-        }
-        if (u.getNom() != null && !u.getNom().isEmpty()) {
-            initials += u.getNom().charAt(0);
-        }
-        initials = initials.toUpperCase();
-
-        // 5) Traduire le rôle enum -> label lisible
-        String roleLabel;
-        if (u.getRole() == UserRole.SUPER_ADMIN) {
-            roleLabel = "Super administrateur";
-        } else if (u.getRole() == UserRole.ADMIN) {
-            roleLabel = "Administrateur";
-        } else if (u.getRole() == UserRole.AGENT) {
-            roleLabel = "Agent municipal";
-        } else if (u.getRole() == UserRole.CITOYEN) {
-            roleLabel = "Citoyen";
-        } else {
-            roleLabel = u.getRole().name();
-        }
-
-        // 6) Envoyer au template Thymeleaf
-        model.addAttribute("fullName", fullName);
-        model.addAttribute("initials", initials);
-        model.addAttribute("roleLabel", roleLabel);
+        connectedUserInfoService.addConnectedUserInfo(model, authentication);
+        model.addAttribute("pageTitle", "Tableau de bord");
+        model.addAttribute("activeMenu", "dashboard");
 
         return "admin-dashboard";
+    }
+
+    // ✅ Page : incidents du département de l’admin
+    @GetMapping("/incidents")
+    public String adminIncidents(Model model, Authentication authentication) {
+
+        // Infos pour le header (nom, rôle, initials…)
+        connectedUserInfoService.addConnectedUserInfo(model, authentication);
+
+        // 1) Récupérer l'admin connecté
+        String email = authentication.getName();
+        Utilisateur admin = utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Administrateur introuvable : " + email));
+
+        Departement dep = admin.getDepartement();
+
+        if (dep == null) {
+            model.addAttribute("errorMessage",
+                    "Aucun département n’est associé à votre compte administrateur.");
+            model.addAttribute("incidents", Collections.emptyList());
+            return "admin-incidents";
+        }
+
+        // 2) Mapper Departement -> CategorieIncident
+        CategorieIncident categorie;
+        try {
+            categorie = CategorieIncident.valueOf(dep.name());
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("errorMessage",
+                    "Impossible de faire correspondre le département " + dep +
+                            " avec une catégorie d’incident.");
+            model.addAttribute("incidents", Collections.emptyList());
+            return "admin-incidents";
+        }
+
+        // 3) Récupérer TOUS les incidents de cette catégorie (assignés ou non)
+        List<Incident> incidents =
+                incidentRepository.findByCategorieOrderByDateCreationDesc(categorie);
+
+        model.addAttribute("departement", dep);
+        model.addAttribute("incidents", incidents);
+        model.addAttribute("pageTitle", "Incidents");
+        model.addAttribute("activeMenu", "incidents");
+
+        return "admin-incidents";
     }
 }

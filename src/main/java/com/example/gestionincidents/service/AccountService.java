@@ -43,7 +43,7 @@ public class AccountService {
         return userDetailsManager.userExists(email);
     }
 
-    // ✅ Création définitive d’un citoyen après vérification du code
+    //  Création définitive d’un citoyen après vérification du code
     public void registerCitizen(String nom, String prenom, String email, String phone, String rawPassword) {
         if (userDetailsManager.userExists(email)) {
             throw new IllegalArgumentException("Un compte existe déjà avec cet email");
@@ -71,7 +71,7 @@ public class AccountService {
         utilisateurRepository.save(u);
     }
 
-    // ✅ NOUVEAU : Création d’un AGENT avec mot de passe généré (renvoie le mdp en clair)
+    // Création d’un AGENT avec mot de passe généré (renvoie le mdp en clair)
     public String createAgentWithGeneratedPassword(String nom,
                                                    String prenom,
                                                    String email,
@@ -105,11 +105,11 @@ public class AccountService {
 
         utilisateurRepository.save(u);
 
-        // 👉 On renvoie le mot de passe en clair pour l'email
+        //  On renvoie le mot de passe en clair pour l'email
         return rawPassword;
     }
 
-    // ✅ NOUVEAU : Création d’un ADMIN avec mot de passe généré (renvoie le mdp en clair)
+    // Création d’un ADMIN avec mot de passe généré (renvoie le mdp en clair)
     public String createAdminWithGeneratedPassword(String nom,
                                                    String prenom,
                                                    String email,
@@ -139,17 +139,8 @@ public class AccountService {
 
         utilisateurRepository.save(u);
 
-        // 👉 On renvoie le mot de passe en clair pour l'email
+        //  On renvoie le mot de passe en clair pour l'email
         return rawPassword;
     }
 
-    // (Optionnel) anciennes méthodes qui ne renvoient rien,
-    // si jamais tu les utilises ailleurs dans le code.
-//    public void createAgent(String nom, String prenom, String email, String phone) {
-//        createAgentWithGeneratedPassword(nom, prenom, email, phone, departement );
-//    }
-
-//    public void createAdmin(String nom, String prenom, String email, String phone) {
-//        createAdminWithGeneratedPassword(nom, prenom, email, phone);
-//    }
 }

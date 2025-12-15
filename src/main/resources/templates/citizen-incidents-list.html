@@ -179,35 +179,66 @@
 <body>
 <div class="dashboard-container">
 
-    <!-- SIDEBAR -->
+    <!-- SIDEBAR (copié de ton dashboard citoyen) -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="logo"><i class="fas fa-city"></i></div>
+            <div class="logo">
+                <i class="fas fa-city"></i>
+            </div>
             <div class="app-name">Espace citoyen</div>
         </div>
 
         <ul class="sidebar-menu">
             <li>
                 <a th:href="@{/citoyen/dashboard}">
-                    <i class="fas fa-home"></i> Tableau de bord
+                    <span class="menu-icon"><i class="fas fa-home"></i></span>
+                    <span class="menu-text">Tableau de bord</span>
                 </a>
             </li>
+
             <li>
                 <a th:href="@{/citoyen/incidents/nouveau}">
-                    <i class="fas fa-plus-circle"></i> Déclarer un incident
+                    <span class="menu-icon"><i class="fas fa-plus-circle"></i></span>
+                    <span class="menu-text">Déclarer un incident</span>
                 </a>
             </li>
+
             <li>
                 <a th:href="@{/citoyen/incidents}" class="active">
-                    <i class="fas fa-list"></i> Mes incidents
+                    <span class="menu-icon"><i class="fas fa-list"></i></span>
+                    <span class="menu-text">Mes incidents</span>
+                </a>
+            </li>
+
+            <li>
+                <a th:href="@{/citoyen/carte}">
+                    <span class="menu-icon"><i class="fas fa-map-marked-alt"></i></span>
+                    <span class="menu-text">Carte des incidents</span>
+                </a>
+            </li>
+
+            <li>
+                <a th:href="@{/citoyen/profil}">
+                    <span class="menu-icon"><i class="fas fa-user-cog"></i></span>
+                    <span class="menu-text">Mon profil</span>
+                </a>
+            </li>
+
+            <li>
+                <a th:href="@{/citoyen/notifications}">
+                    <span class="menu-icon"><i class="fas fa-bell"></i></span>
+                    <span class="menu-text">Notifications</span>
                 </a>
             </li>
         </ul>
 
         <div class="sidebar-footer">
-            <button class="logout-btn" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i> Déconnexion
-            </button>
+            <form th:action="@{/logout}" method="post">
+                <button class="logout-btn" type="submit">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Déconnexion</span>
+                </button>
+            </form>
         </div>
     </aside>
 
@@ -220,6 +251,29 @@
                     <i class="fas fa-bars"></i>
                 </button>
                 <div class="page-title">Mes incidents</div>
+            </div>
+            <div class="navbar-right">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Rechercher un incident...">
+                </div>
+
+                <div class="navbar-actions">
+                    <div class="action-icon">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge"></span>
+                    </div>
+
+                    <div class="user-profile">
+                        <div class="user-avatar" th:text="${initials}">CT</div>
+                        <div class="user-info">
+                            <div class="user-name" th:text="${fullName}">Citoyen</div>
+                            <div class="user-role" th:text="${roleLabel}">Citoyen</div>
+                        </div>
+                        <i class="fas fa-chevron-down"
+                           style="font-size: 12px; color: var(--text-gray);"></i>
+                    </div>
+                </div>
             </div>
         </nav>
 
@@ -320,7 +374,7 @@
         document.getElementById('photoModal').style.display = 'none';
     }
 
-    document.getElementById('logoutBtn').onclick = () => location.href = '/logout';
+
 </script>
 
 </body>

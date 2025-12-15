@@ -49,9 +49,9 @@
 
             <!-- Carte des incidents (optionnel selon le sujet) -->
             <li>
-                <a th:href="@{/citoyen/carte}">
-                    <span class="menu-icon"><i class="fas fa-map-marked-alt"></i></span>
-                    <span class="menu-text">Carte des incidents</span>
+                <a th:href="@{/citoyen/historique}">
+                    <span class="menu-icon"><i class="fas fa-history"></i></span>
+                    <span class="menu-text">Historique des incidents</span>
                 </a>
             </li>
 
@@ -71,12 +71,13 @@
                 </a>
             </li>
         </ul>
-
         <div class="sidebar-footer">
-            <button class="logout-btn" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Déconnexion</span>
-            </button>
+            <form th:action="@{/logout}" method="post">
+                <button class="logout-btn" type="submit">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Déconnexion</span>
+                </button>
+            </form>
         </div>
     </aside>
 
@@ -154,15 +155,6 @@
             sidebar.classList.toggle('active');
         });
     }
-
-    // Logout button -> vraie déconnexion Spring Security
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            window.location.href = '/logout';
-        });
-    }
-
     // Active menu item selection
     const menuItems = document.querySelectorAll('.sidebar-menu a');
     menuItems.forEach(item => {

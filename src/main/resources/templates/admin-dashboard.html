@@ -4,33 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de bord admin</title>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
 </head>
 <body>
+
 <div class="dashboard-container">
+
     <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="logo">
-                <i class="fas fa-shield-alt"></i>
-            </div>
+            <div class="logo"><i class="fas fa-shield-alt"></i></div>
             <div class="app-name">AdminPanel</div>
         </div>
 
         <ul class="sidebar-menu">
             <li>
-                <a href="#" class="active">
+                <a th:href="@{/admin}" class="active">
                     <span class="menu-icon"><i class="fas fa-home"></i></span>
                     <span class="menu-text">Tableau de bord</span>
                 </a>
             </li>
+
             <li>
-                <a href="#">
+                <a th:href="@{/admin/incidents}">
                     <span class="menu-icon"><i class="fas fa-tasks"></i></span>
                     <span class="menu-text">Incidents</span>
                 </a>
             </li>
+
             <li>
                 <a href="#">
                     <span class="menu-icon"><i class="fas fa-users"></i></span>
@@ -64,16 +67,17 @@
         </ul>
 
         <div class="sidebar-footer">
-            <button class="logout-btn" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Déconnexion</span>
-            </button>
+            <form th:action="@{/logout}" method="post">
+                <button class="logout-btn" type="submit">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Déconnexion</span>
+                </button>
+            </form>
         </div>
     </aside>
 
-    <!-- Main Content -->
     <main class="main-content">
-        <!-- Navbar Minimaliste -->
+
         <nav class="navbar">
             <div class="navbar-left">
                 <button class="menu-toggle" id="menuToggle">
@@ -98,30 +102,22 @@
                     </div>
 
                     <div class="user-profile">
-                        <!-- Initiales dynamiques (ex : "AM" pour Admin Machin) -->
                         <div class="user-avatar" th:text="${initials}">AD</div>
 
                         <div class="user-info">
-                            <!-- Nom dynamique -->
                             <div class="user-name" th:text="${fullName}">Administrateur</div>
-
-                            <!-- Rôle dynamique -->
                             <div class="user-role" th:text="${roleLabel}">Super Admin</div>
                         </div>
 
-                        <i class="fas fa-chevron-down" style="font-size: 12px; color: var(--text-gray);"></i>
+                        <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
                     </div>
-
                 </div>
             </div>
         </nav>
 
-        <!-- Zone de contenu vide (comme demandé) -->
         <div class="content">
             <div class="empty-state">
-                <div class="empty-icon">
-                    <i class="fas fa-inbox"></i>
-                </div>
+                <div class="empty-icon"><i class="fas fa-inbox"></i></div>
                 <h2 class="empty-title">Aucun contenu</h2>
                 <p class="empty-description">
                     Cette page est intentionnellement vide.
@@ -129,42 +125,41 @@
                 </p>
             </div>
         </div>
+
     </main>
 </div>
 
 <script>
-    // Toggle sidebar on mobile
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.querySelector('.sidebar');
 
-    menuToggle.addEventListener('click', () => {
-        sidebar.classList.toggle('active');
-    });
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+    }
 
-    // Logout button functionality
-    const logoutBtn = document.getElementById('logoutBtn');
-    logoutBtn.addEventListener('click', () => {
-        alert('Déconnexion effectuée avec succès');
-        // window.location.href = '/logout'; // Pour une vraie déconnexion
-    });
-
-    // Active menu item selection
+    // ✅ On empêche seulement les liens "#"
     const menuItems = document.querySelectorAll('.sidebar-menu a');
     menuItems.forEach(item => {
         item.addEventListener('click', (e) => {
-            e.preventDefault();
+            const href = item.getAttribute('href');
+            if (!href || href === '#') {
+                e.preventDefault();
+            }
+
             menuItems.forEach(i => i.classList.remove('active'));
             item.classList.add('active');
 
-            // Close sidebar on mobile after selection
-            if (window.innerWidth <= 1024) {
+            if (window.innerWidth <= 1024 && sidebar) {
                 sidebar.classList.remove('active');
             }
         });
     });
 
-    // Close sidebar when clicking outside on mobile
     document.addEventListener('click', (event) => {
+        if (!sidebar || !menuToggle) return;
+
         const isClickInsideSidebar = sidebar.contains(event.target);
         const isClickOnMenuToggle = menuToggle.contains(event.target);
 
@@ -176,13 +171,13 @@
         }
     });
 
-    // Update page title based on active menu item
     menuItems.forEach(item => {
         item.addEventListener('click', () => {
-            const menuText = item.querySelector('.menu-text').textContent;
-            document.querySelector('.page-title').textContent = menuText;
+            const menuText = item.querySelector('.menu-text')?.textContent;
+            if (menuText) document.querySelector('.page-title').textContent = menuText;
         });
     });
 </script>
+
 </body>
 </html>

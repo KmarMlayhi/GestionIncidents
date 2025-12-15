@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incidents</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+</head>
+<body>
+
+<div class="dashboard-container">
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo"><i class="fas fa-shield-alt"></i></div>
+            <div class="app-name">AdminPanel</div>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li>
+                <a th:href="@{/admin}">
+                    <span class="menu-icon"><i class="fas fa-home"></i></span>
+                    <span class="menu-text">Tableau de bord</span>
+                </a>
+            </li>
+
+            <li>
+                <a th:href="@{/admin/incidents}" class="active">
+                    <span class="menu-icon"><i class="fas fa-tasks"></i></span>
+                    <span class="menu-text">Incidents</span>
+                </a>
+            </li>
+
+            <li><a href="#"><span class="menu-icon"><i class="fas fa-users"></i></span><span class="menu-text">Utilisateurs</span></a></li>
+            <li><a href="#"><span class="menu-icon"><i class="fas fa-chart-line"></i></span><span class="menu-text">Analytique</span></a></li>
+            <li><a href="#"><span class="menu-icon"><i class="fas fa-cog"></i></span><span class="menu-text">Paramètres</span></a></li>
+            <li><a href="#"><span class="menu-icon"><i class="fas fa-file-alt"></i></span><span class="menu-text">Rapports</span></a></li>
+            <li><a href="#"><span class="menu-icon"><i class="fas fa-bell"></i></span><span class="menu-text">Notifications</span></a></li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <form th:action="@{/logout}" method="post">
+                <button class="logout-btn" type="submit">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Déconnexion</span>
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <nav class="navbar">
+            <div class="navbar-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="page-title">Incidents</div>
+            </div>
+
+            <div class="navbar-right">
+                <div class="navbar-actions">
+                    <div class="user-profile">
+                        <div class="user-avatar" th:text="${initials}">AD</div>
+                        <div class="user-info">
+                            <div class="user-name" th:text="${fullName}">Administrateur</div>
+                            <div class="user-role" th:text="${roleLabel}">Admin</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="content">
+
+            <div class="page-header" style="margin-bottom: 24px;">
+                <h2 class="page-title-main">
+                    <i class="fas fa-tasks" style="margin-right: 8px;"></i>
+                    Incidents de votre département
+                </h2>
+                <p class="page-subtitle">
+                    Département :
+                    <strong th:text="${departement}">PROPRETE</strong>
+                </p>
+            </div>
+
+            <div th:if="${errorMessage}"
+                 style="background:#fef2f2;border:1px solid #ef4444;color:#b91c1c;
+                padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:14px;">
+                <i class="fas fa-exclamation-circle" style="margin-right:8px;"></i>
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <div th:if="${#lists.isEmpty(incidents)}" class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-inbox"></i>
+                </div>
+                <h2 class="empty-title">Aucun incident trouvé</h2>
+                <p class="empty-description">
+                    Aucun incident de votre département n’a encore été déclaré.
+                </p>
+            </div>
+
+            <div th:if="${!#lists.isEmpty(incidents)}" class="table-wrapper">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Titre</th>
+                        <th>Description</th>
+                        <th>Catégorie</th>
+                        <th>État</th>
+                        <th>Priorité</th>
+                        <th>Citoyen</th>
+                        <th>Agent assigné</th>
+                        <th>Date création</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="incident : ${incidents}">
+                        <td th:text="${incident.id}">1</td>
+                        <td th:text="${incident.titre}">Titre</td>
+                        <td th:text="${#strings.length(incident.description) > 80 ?
+                              #strings.substring(incident.description, 0, 80) + '…' :
+                              incident.description}">
+                            Description
+                        </td>
+                        <td th:text="${incident.categorie}">PROPRETE</td>
+                        <td>
+                            <span th:text="${incident.etat != null ? incident.etat : 'NOUVEAU'}"></span>
+                        </td>
+                        <td>
+                            <span th:text="${incident.priorite != null ? incident.priorite : 'Non définie'}"></span>
+                        </td>
+                        <td>
+                            <span th:if="${incident.citoyen != null}"
+                                  th:text="${incident.citoyen.prenom + ' ' + incident.citoyen.nom}">
+                                Citoyen
+                            </span>
+                            <span th:if="${incident.citoyen == null}">-</span>
+                        </td>
+                        <td>
+                            <span th:if="${incident.agentAssigne != null}"
+                                  th:text="${incident.agentAssigne.prenom + ' ' + incident.agentAssigne.nom}">
+                                Agent
+                            </span>
+                            <span th:if="${incident.agentAssigne == null}">Non assigné</span>
+                        </td>
+                        <td th:text="${incident.dateCreation != null ?
+                              #temporals.format(incident.dateCreation, 'dd/MM/yyyy HH:mm') :
+                              '-'}">
+                            14/12/2025 10:32
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </main>
+
+</div>
+
+</body>
+</html>
