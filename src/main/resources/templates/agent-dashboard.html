@@ -30,7 +30,7 @@
                 </a>
             </li>
             <li>
-                <a href="#">
+                <a th:href="@{/agent/incidents}">
                     <span class="menu-icon"><i class="fas fa-tasks"></i></span>
                     <span class="menu-text">Incidents assignés</span>
                 </a>
@@ -118,9 +118,14 @@
     const menuItems = document.querySelectorAll('.sidebar-menu a');
     menuItems.forEach(item => {
         item.addEventListener('click', (e) => {
-            e.preventDefault();
-            menuItems.forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
+            const href = a.getAttribute('href'); // après rendu thymeleaf, th:href devient href
+
+            // ✅ Bloquer uniquement les liens non-fonctionnels
+            if (!href || href === '#') {
+                e.preventDefault();
+
+                document.querySelectorAll('.sidebar-menu a').forEach(i => i.classList.remove('active'));
+                a.classList.add('active');
             const menuText = item.querySelector('.menu-text').textContent;
             document.querySelector('.page-title').textContent = menuText;
         });

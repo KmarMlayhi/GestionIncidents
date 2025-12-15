@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Incidents</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/inscidentadmin.css}">
 </head>
 <body>
-
 <div class="dashboard-container">
 
-    <aside class="sidebar">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo"><i class="fas fa-shield-alt"></i></div>
             <div class="app-name">AdminPanel</div>
@@ -51,118 +51,484 @@
         </div>
     </aside>
 
+    <!-- Main -->
     <main class="main-content">
 
+        <!-- Navbar -->
         <nav class="navbar">
             <div class="navbar-left">
-                <button class="menu-toggle" id="menuToggle">
+                <button class="menu-toggle" id="menuToggle" type="button">
                     <i class="fas fa-bars"></i>
                 </button>
                 <div class="page-title">Incidents</div>
             </div>
 
             <div class="navbar-right">
-                <div class="navbar-actions">
-                    <div class="user-profile">
-                        <div class="user-avatar" th:text="${initials}">AD</div>
-                        <div class="user-info">
-                            <div class="user-name" th:text="${fullName}">Administrateur</div>
-                            <div class="user-role" th:text="${roleLabel}">Admin</div>
-                        </div>
+                <div class="user-profile">
+                    <div class="user-avatar" th:text="${initials}">AD</div>
+                    <div class="user-info">
+                        <div class="user-name" th:text="${fullName}">Administrateur</div>
+                        <div class="user-role" th:text="${roleLabel}">Admin</div>
                     </div>
                 </div>
             </div>
         </nav>
 
+        <!-- Content -->
         <div class="content">
 
-            <div class="page-header" style="margin-bottom: 24px;">
+            <div class="page-top">
                 <h2 class="page-title-main">
-                    <i class="fas fa-tasks" style="margin-right: 8px;"></i>
+                    <i class="fas fa-list-check"></i>
                     Incidents de votre département
                 </h2>
-                <p class="page-subtitle">
-                    Département :
-                    <strong th:text="${departement}">PROPRETE</strong>
-                </p>
+
+                <div class="dept-line">
+                    <span>Département :</span>
+                    <span class="dept-badge">
+            <i class="fas fa-building"></i>
+            <span th:text="${departement}">PROPRETE</span>
+          </span>
+                </div>
             </div>
 
-            <div th:if="${errorMessage}"
-                 style="background:#fef2f2;border:1px solid #ef4444;color:#b91c1c;
-                padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:14px;">
-                <i class="fas fa-exclamation-circle" style="margin-right:8px;"></i>
+            <div th:if="${errorMessage}" class="alert-danger">
+                <i class="fas fa-exclamation-circle"></i>
                 <span th:text="${errorMessage}"></span>
             </div>
 
-            <div th:if="${#lists.isEmpty(incidents)}" class="empty-state">
-                <div class="empty-icon">
-                    <i class="fas fa-inbox"></i>
+            <!-- KPIs -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-icon kpi-blue"><i class="fas fa-clock"></i></div>
+                    <div>
+                        <div class="kpi-value" th:text="${countNouveaux != null ? countNouveaux : 0}">0</div>
+                        <div class="kpi-label">Nouveaux</div>
+                    </div>
                 </div>
-                <h2 class="empty-title">Aucun incident trouvé</h2>
-                <p class="empty-description">
-                    Aucun incident de votre département n’a encore été déclaré.
-                </p>
+
+                <div class="kpi-card">
+                    <div class="kpi-icon kpi-amber"><i class="fas fa-spinner"></i></div>
+                    <div>
+                        <div class="kpi-value" th:text="${countEnCours != null ? countEnCours : 0}">0</div>
+                        <div class="kpi-label">En cours</div>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-icon kpi-green"><i class="fas fa-check-circle"></i></div>
+                    <div>
+                        <div class="kpi-value" th:text="${countResolus != null ? countResolus : 0}">0</div>
+                        <div class="kpi-label">Résolus</div>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-icon kpi-gray"><i class="fas fa-table-list"></i></div>
+                    <div>
+                        <div class="kpi-value" th:text="${countTotal != null ? countTotal : 0}">0</div>
+                        <div class="kpi-label">Total incidents</div>
+                    </div>
+                </div>
             </div>
 
-            <div th:if="${!#lists.isEmpty(incidents)}" class="table-wrapper">
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Titre</th>
-                        <th>Description</th>
-                        <th>Catégorie</th>
-                        <th>État</th>
-                        <th>Priorité</th>
-                        <th>Citoyen</th>
-                        <th>Agent assigné</th>
-                        <th>Date création</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="incident : ${incidents}">
-                        <td th:text="${incident.id}">1</td>
-                        <td th:text="${incident.titre}">Titre</td>
-                        <td th:text="${#strings.length(incident.description) > 80 ?
-                              #strings.substring(incident.description, 0, 80) + '…' :
-                              incident.description}">
-                            Description
-                        </td>
-                        <td th:text="${incident.categorie}">PROPRETE</td>
-                        <td>
-                            <span th:text="${incident.etat != null ? incident.etat : 'NOUVEAU'}"></span>
-                        </td>
-                        <td>
-                            <span th:text="${incident.priorite != null ? incident.priorite : 'Non définie'}"></span>
-                        </td>
-                        <td>
-                            <span th:if="${incident.citoyen != null}"
-                                  th:text="${incident.citoyen.prenom + ' ' + incident.citoyen.nom}">
-                                Citoyen
-                            </span>
-                            <span th:if="${incident.citoyen == null}">-</span>
-                        </td>
-                        <td>
-                            <span th:if="${incident.agentAssigne != null}"
-                                  th:text="${incident.agentAssigne.prenom + ' ' + incident.agentAssigne.nom}">
-                                Agent
-                            </span>
-                            <span th:if="${incident.agentAssigne == null}">Non assigné</span>
-                        </td>
-                        <td th:text="${incident.dateCreation != null ?
-                              #temporals.format(incident.dateCreation, 'dd/MM/yyyy HH:mm') :
-                              '-'}">
-                            14/12/2025 10:32
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+            <!-- Filters -->
+            <div class="filters-card">
+                <div class="filters-row">
+                    <div class="filters-title"><i class="fas fa-filter"></i> Filtres :</div>
+
+                    <select class="filter-select" id="etatFilter">
+                        <option value="">Tous les états</option>
+                        <option value="NOUVEAU">Nouveaux</option>
+                        <option value="PRISE_EN_CHARGE">Prise en charge</option>
+                        <option value="EN_RESOLUTION">En résolution</option>
+                        <option value="EN_ATTENTE">En attente</option>
+                        <option value="RESOLUE">Résolue</option>
+                        <option value="CLOTURE">Clôturé</option>
+                    </select>
+
+                    <select class="filter-select" id="prioFilter">
+                        <option value="">Toutes priorités</option>
+                        <option value="HAUTE">Haute</option>
+                        <option value="MOYENNE">Moyenne</option>
+                        <option value="BASSE">Basse</option>
+                    </select>
+
+                    <button class="btn-soft" type="button" id="resetFilters">
+                        <i class="fas fa-rotate-left"></i> Réinitialiser
+                    </button>
+
+                    <div class="filters-spacer"></div>
+
+                    <div class="search-mini">
+                        <i class="fas fa-search"></i>
+                        <input id="tableSearch" type="text" placeholder="Rechercher…">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty -->
+            <div th:if="${incidents == null or #lists.isEmpty(incidents)}" class="empty-state">
+                <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+                <h2 class="empty-title">Aucun incident trouvé</h2>
+                <p class="empty-description">Aucun incident de votre département n’a encore été déclaré.</p>
+            </div>
+
+            <!-- Table -->
+            <div th:if="${incidents != null and !#lists.isEmpty(incidents)}" class="table-card">
+                <div class="table-card-header">
+                    <div class="table-card-title"><i class="fas fa-list"></i> Liste des incidents</div>
+
+                    <!-- ✅ correction thymeleaf -->
+                    <div class="table-card-hint" th:text="|${#lists.size(incidents)} élément(s)|">0 élément(s)</div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="table-modern" id="incidentsTable">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Titre</th>
+                            <th>État</th>
+                            <th>Priorité</th>
+                            <th>Citoyen</th>
+                            <th>Agent</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="incident : ${incidents}"
+                            th:attr="data-etat=${incident.etat != null ? incident.etat.name() : 'NOUVEAU'},
+                           data-priorite=${incident.priorite != null ? incident.priorite.name() : ''}">
+
+                            <td class="mono" th:text="${incident.id}">1</td>
+
+                            <td class="cell-strong" th:text="${incident.titre}">Titre</td>
+
+                            <td>
+                              <span class="pill"
+                                    th:classappend="${incident.etat != null and incident.etat.name() == 'NOUVEAU'} ? ' pill-blue' :
+                                                    (${incident.etat != null and (incident.etat.name() == 'PRISE_EN_CHARGE' or incident.etat.name() == 'EN_RESOLUTION')} ? ' pill-amber' :
+                                                    (${incident.etat != null and (incident.etat.name() == 'RESOLUE' or incident.etat.name() == 'CLOTURE')} ? ' pill-green' :
+                                                    ' pill-gray'))"
+                                    th:text="${incident.etat != null ? incident.etat : 'NOUVEAU'}">
+                                NOUVEAU
+                              </span>
+                            </td>
+
+                            <td>
+                                <form th:action="@{'/admin/incidents/' + ${incident.id} + '/priorite'}" method="post">
+
+                                    <input type="hidden"
+                                           th:if="${_csrf != null}"
+                                           th:name="${_csrf.parameterName}"
+                                           th:value="${_csrf.token}" />
+
+                                    <select name="priorite" onchange="this.form.submit()">
+                                        <option value="" th:selected="${incident.priorite == null}">Non définie</option>
+
+                                        <option th:each="p : ${T(com.example.gestionincidents.entity.Priorite).values()}"
+                                                th:value="${p.name()}"
+                                                th:text="${p.name()}"
+                                                th:selected="${incident.priorite != null and p == incident.priorite}">
+                                        </option>
+                                    </select>
+                                </form>
+                            </td>
+
+                            <td>
+                              <span th:if="${incident.citoyen != null}"
+                                    th:text="${incident.citoyen.prenom + ' ' + incident.citoyen.nom}">Citoyen
+                              </span>
+                                <span th:if="${incident.citoyen == null}">—</span>
+                            </td>
+
+                            <td>
+                                  <span th:if="${incident.agentAssigne != null}"
+                                        th:text="${incident.agentAssigne.prenom + ' ' + incident.agentAssigne.nom}">Agent</span>
+                                <span th:if="${incident.agentAssigne == null}" class="cell-muted">Non assigné</span>
+                            </td>
+
+                            <td class="mono"
+                                th:text="${incident.dateCreation != null ? #temporals.format(incident.dateCreation,'dd/MM/yyyy HH:mm') : '-'}">-</td>
+
+                            <!-- ✅ bouton œil : ouvre modal -->
+                            <td>
+                                <button type="button"
+                                        class="btn-action"
+                                        title="Voir"
+                                        th:attr="data-title=${incident.titre},
+                                   data-desc=${incident.description},
+                                   data-photo=${(incident.photos != null and !#lists.isEmpty(incident.photos)) ? '/uploads/incidents/' + incident.photos[0].nomPhoto : ''}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button type="button"
+                                        class="btn-action"
+                                        title="Assigner"
+                                        th:attr="data-incident-id=${incident.id},
+                                                 data-agent-id=${incident.agentAssigne != null ? incident.agentAssigne.id : ''}">
+                                    <i class="fas fa-user-check"></i>
+                                </button>
+                            </td>
+
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
         </div>
     </main>
-
 </div>
 
+<!-- ===== Modal (popup) ===== -->
+<div id="incidentModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-card" role="dialog" aria-modal="true">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fas fa-eye"></i>
+                <span id="mTitle">Détails incident</span>
+            </div>
+            <button class="modal-close" type="button" id="modalClose" title="Fermer">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <div class="modal-grid">
+                <div class="modal-photo">
+                    <div id="mNoPhoto" class="no-photo">
+                        <i class="fas fa-image"></i>
+                        <div>Aucune photo</div>
+                    </div>
+                    <img id="mPhoto" alt="Photo incident" style="display:none;">
+                </div>
+
+                <div class="modal-info">
+                    <div class="info-block">
+                        <div class="info-label">Description</div>
+                        <div id="mDesc" class="info-text">—</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn-soft" id="modalOk">
+                <i class="fas fa-check"></i> OK
+            </button>
+        </div>
+    </div>
+</div>
+<!-- ===== Modal Assign Agent ===== -->
+<div id="assignModal" class="modal-backdrop" style="display:none;">
+    <div class="modal-card" role="dialog" aria-modal="true">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fas fa-user-check"></i>
+                <span>Assigner un agent</span>
+            </div>
+            <button class="modal-close" type="button" id="assignClose" title="Fermer">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="assignForm" method="post">
+            <!-- CSRF (safe) -->
+            <input type="hidden"
+                   th:if="${_csrf != null}"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}" />
+
+            <div class="modal-body">
+                <div class="info-block">
+                    <div class="info-label">Agent</div>
+
+                    <select name="agentId" id="agentSelect" required>
+                        <option value="" disabled selected>Choisir un agent…</option>
+
+                        <!-- Option pour désassigner -->
+                        <option value="">(Désassigner)</option>
+
+                        <option th:each="a : ${agents}"
+                                th:value="${a.id}"
+                                th:text="${a.prenom + ' ' + a.nom}">
+                        </option>
+                    </select>
+
+                    <div th:if="${agents == null or #lists.isEmpty(agents)}" class="cell-muted" style="margin-top:8px;">
+                        Aucun agent disponible pour votre admin.
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-soft" id="assignCancel">
+                    <i class="fas fa-times"></i> Annuler
+                </button>
+                <button type="submit" class="btn-soft">
+                    <i class="fas fa-save"></i> Enregistrer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // ===== Sidebar toggle (mobile) =====
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', () => sidebar.classList.toggle('active'));
+    }
+
+    // IMPORTANT: ne bloque pas les liens /admin/incidents
+    document.querySelectorAll('.sidebar-menu a').forEach(a => {
+        a.addEventListener('click', (e) => {
+            const href = a.getAttribute('href');
+            if (!href || href === '#') e.preventDefault();
+            if (window.innerWidth <= 1024 && sidebar) sidebar.classList.remove('active');
+        });
+    });
+
+    // ===== Filters + search =====
+    const etatFilter = document.getElementById('etatFilter');
+    const prioFilter = document.getElementById('prioFilter');
+    const resetBtn = document.getElementById('resetFilters');
+    const search = document.getElementById('tableSearch');
+    const table = document.getElementById('incidentsTable');
+
+    function applyFilters() {
+        if (!table) return;
+
+        const etat = (etatFilter?.value || '').toLowerCase();
+        const prio = (prioFilter?.value || '').toLowerCase();
+        const q = (search?.value || '').toLowerCase();
+
+        table.querySelectorAll('tbody tr').forEach(tr => {
+            const rowEtat = (tr.getAttribute('data-etat') || '').toLowerCase();
+            const rowPrio = (tr.getAttribute('data-priorite') || '').toLowerCase();
+            const text = tr.innerText.toLowerCase();
+
+            const okEtat = !etat || rowEtat === etat;
+            const okPrio = !prio || rowPrio === prio;
+            const okText = !q || text.includes(q);
+
+            tr.style.display = (okEtat && okPrio && okText) ? '' : 'none';
+        });
+    }
+
+    etatFilter?.addEventListener('change', applyFilters);
+    prioFilter?.addEventListener('change', applyFilters);
+    search?.addEventListener('input', applyFilters);
+
+    resetBtn?.addEventListener('click', () => {
+        if (etatFilter) etatFilter.value = '';
+        if (prioFilter) prioFilter.value = '';
+        if (search) search.value = '';
+        applyFilters();
+    });
+
+    // ===== Modal (photo + description) =====
+    const modal = document.getElementById('incidentModal');
+    const mTitle = document.getElementById('mTitle');
+    const mDesc  = document.getElementById('mDesc');
+    const mPhoto = document.getElementById('mPhoto');
+    const mNoPhoto = document.getElementById('mNoPhoto');
+    const modalClose = document.getElementById('modalClose');
+    const modalOk = document.getElementById('modalOk');
+
+    function openModal({title, desc, photo}) {
+        mTitle.textContent = title || 'Détails incident';
+        mDesc.textContent = desc || '—';
+
+        if (photo) {
+            mPhoto.src = photo;
+            mPhoto.style.display = '';
+            mNoPhoto.style.display = 'none';
+        } else {
+            mPhoto.removeAttribute('src');
+            mPhoto.style.display = 'none';
+            mNoPhoto.style.display = '';
+        }
+
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    document.querySelectorAll('.btn-action[data-title]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            openModal({
+                title: btn.getAttribute('data-title'),
+                desc: btn.getAttribute('data-desc'),
+                photo: btn.getAttribute('data-photo')
+            });
+        });
+    });
+
+    modalClose?.addEventListener('click', closeModal);
+    modalOk?.addEventListener('click', closeModal);
+
+    modal?.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+    });
+    // ===== Assign modal =====
+    const assignModal = document.getElementById('assignModal');
+    const assignForm = document.getElementById('assignForm');
+    const agentSelect = document.getElementById('agentSelect');
+
+    const assignClose = document.getElementById('assignClose');
+    const assignCancel = document.getElementById('assignCancel');
+
+    function openAssignModal(incidentId, currentAgentId) {
+        // Action: /admin/incidents/{id}/assign-agent
+        assignForm.action = `/admin/incidents/${incidentId}/assign-agent`;
+
+        // Pré-sélectionner agent (si déjà assigné)
+        if (currentAgentId) agentSelect.value = currentAgentId;
+        else agentSelect.value = ""; // désassigner par défaut
+
+        assignModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeAssignModal() {
+        assignModal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    // bouton assigner (2ème btn-action)
+    document.querySelectorAll('.btn-action[data-incident-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            openAssignModal(
+                btn.getAttribute('data-incident-id'),
+                btn.getAttribute('data-agent-id')
+            );
+        });
+    });
+
+    assignClose?.addEventListener('click', closeAssignModal);
+    assignCancel?.addEventListener('click', closeAssignModal);
+
+    assignModal?.addEventListener('click', (e) => {
+        if (e.target === assignModal) closeAssignModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && assignModal.style.display === 'flex') closeAssignModal();
+    });
+</script>
 </body>
 </html>

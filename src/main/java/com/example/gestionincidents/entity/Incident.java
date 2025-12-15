@@ -49,7 +49,9 @@ public class Incident {
     @JoinColumn(name = "quartier_id")
     private Quartier quartier;
 
+
     @OneToMany(mappedBy = "incident", cascade = CascadeType.ALL)
+    @OrderBy("dateUpload DESC")
     private List<Photo> photos = new ArrayList<>();
 
     @OneToMany(mappedBy = "incident", cascade = CascadeType.ALL)
