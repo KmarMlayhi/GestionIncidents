@@ -1,6 +1,7 @@
 package com.example.gestionincidents.controller;
 
 import com.example.gestionincidents.entity.Incident;
+import com.example.gestionincidents.entity.IncidentFeedback;
 import com.example.gestionincidents.service.AgentIncidentService;
 import com.example.gestionincidents.service.ConnectedUserInfoService;
 import org.springframework.security.core.Authentication;
@@ -10,7 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/agent")
@@ -37,6 +40,16 @@ public class AgentController {
 
         String email = authentication.getName();
         List<Incident> incidents = agentIncidentService.getIncidentsAssignes(email);
+        // ✅ ajouter lastFeedback dans le model
+        Map<Long, IncidentFeedback> lastFeedback = new HashMap<>();
+        for (Incident inc : incidents) {
+            IncidentFeedback fb = agentIncidentService.getDernierFeedback(inc.getId(), email);
+            if (fb != null) lastFeedback.put(inc.getId(), fb);
+        }
+
+        model.addAttribute("incidents", incidents);
+        model.addAttribute("lastFeedback", lastFeedback); // ✅ dispo dans agent-incidents.html
+
 
         model.addAttribute("incidents", incidents);
         model.addAttribute("pageTitle", "Mes incidents");
@@ -73,4 +86,18 @@ public class AgentController {
         }
         return "redirect:/agent/incidents";
     }
+    //repasser du RESOLUE en EN RESOLUTION ( si feedback negatif )
+    @PostMapping("/incidents/{id}/reprendre")
+    public String reprendre(@PathVariable Long id,
+                            Authentication authentication,
+                            RedirectAttributes ra) {
+        try {
+            agentIncidentService.reprendreEnResolution(id, authentication.getName());
+            ra.addFlashAttribute("successMessage", "Incident repris : retour en 'EN_RESOLUTION'.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/agent/incidents";
+    }
+
 }

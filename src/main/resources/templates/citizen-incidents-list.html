@@ -4,174 +4,44 @@
     <meta charset="UTF-8">
     <title>Mes incidents</title>
 
-    <!-- Icons & fonts -->
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
           rel="stylesheet">
 
-    <!-- Dashboard global CSS -->
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/incidentCitoyen.css}">
 
     <style>
-        .page-header {
-            margin-bottom: 24px;
-        }
-
-        .page-title-main {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--text-dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .page-title-main i {
-            color: var(--primary);
-        }
-
-        .page-subtitle {
-            margin-top: 6px;
-            font-size: 14px;
-            color: var(--text-gray);
-            max-width: 700px;
-        }
-
-        .card {
-            background: var(--bg-white);
-            border-radius: 12px;
-            border: 1px solid var(--border-light);
-            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-        }
-
-        .card-body {
-            padding: 24px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-
-        thead {
-            background: #f8fafc;
-        }
-
-        th, td {
-            padding: 12px 14px;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        th {
-            font-weight: 600;
-            color: var(--text-dark);
-            font-size: 13px;
-            text-transform: uppercase;
-        }
-
-        tr:hover {
-            background: #f9fafb;
-        }
-
-        .badge {
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .badge-open {
-            background: #eff6ff;
-            color: #2563eb;
-        }
-
-        .badge-progress {
-            background: #fff7ed;
-            color: #ea580c;
-        }
-
-        .badge-closed {
-            background: #ecfdf3;
-            color: #16a34a;
-        }
-
-        .action-btn {
-            padding: 6px 10px;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-            background: white;
-            cursor: pointer;
-        }
-
-        .primary-btn {
-            background: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 16px;
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-        }
-
-        .top-actions {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 16px;
-        }
-
-        .content {
-            padding: 32px;
-        }
-
-        /* ===== MODAL PHOTOS ===== */
-        .photo-modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.55);
-            z-index: 9999;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .photo-modal-content {
-            background: white;
-            width: 90%;
-            max-width: 850px;
-            padding: 20px;
-            border-radius: 14px;
-            margin: 0;
-        }
-        .content-top {
-            display: block;
-            align-items: unset;
-            justify-content: unset;
-        }
-        .photos-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 14px;
-            margin-top: 16px;
-        }
-
-        .photos-grid img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
+        /* petit style feedback (tu peux le déplacer dans incidentCitoyen.css) */
+        .feedback-box {
+            margin-top: 10px;
+            padding: 12px;
+            border: 1px solid var(--border-color);
             border-radius: 10px;
-            cursor: zoom-in;
+            background: var(--bg-light);
         }
-
-        .close {
-            float: right;
-            font-size: 24px;
-            cursor: pointer;
+        .feedback-box textarea {
+            width: 100%;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            font-family: inherit;
+            resize: vertical;
+        }
+        .feedback-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .feedback-actions label {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            color: var(--text-gray);
         }
     </style>
 </head>
@@ -179,7 +49,7 @@
 <body>
 <div class="dashboard-container">
 
-    <!-- SIDEBAR (copié de ton dashboard citoyen) -->
+    <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="sidebar-header">
             <div class="logo">
@@ -280,6 +150,14 @@
         <div class="content content-top">
             <div style="max-width:1100px;margin:0 auto;">
 
+                <!-- messages -->
+                <div th:if="${successMessage}" class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> <span th:text="${successMessage}"></span>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-error">
+                    <i class="fas fa-exclamation-circle"></i> <span th:text="${errorMessage}"></span>
+                </div>
+
                 <div class="page-header">
                     <h2 class="page-title-main">
                         <i class="fas fa-list"></i>
@@ -307,21 +185,28 @@
                                 <th>État</th>
                                 <th>Photos</th>
                                 <th>Date</th>
+                                <th>Feedback</th>
                             </tr>
                             </thead>
+
                             <tbody>
                             <tr th:each="incident : ${incidents}">
-                                <td th:text="${incident.id}"></td>
-                                <td th:text="${incident.titre}"></td>
-                                <td th:text="${incident.categorie}"></td>
+                                <td th:text="${incident.id}">1</td>
+                                <td th:text="${incident.titre}">Titre</td>
+                                <td th:text="${incident.categorie}">PROPRETE</td>
+
                                 <td>
                                     <span class="badge"
                                           th:classappend="
-                                          ${incident.etat} == 'OUVERT' ? 'badge-open' :
-                                          (${incident.etat} == 'EN_COURS' ? 'badge-progress' : 'badge-closed')"
+                                          ${incident.etat != null and incident.etat.name() == 'NOUVEAU'} ? 'badge-open' :
+                                          (${incident.etat != null and incident.etat.name() == 'PRISE_EN_CHARGE'} ? 'badge-progress' :
+                                          (${incident.etat != null and incident.etat.name() == 'EN_RESOLUTION'} ? 'badge-progress' :
+                                          (${incident.etat != null and incident.etat.name() == 'RESOLUE'} ? 'badge-closed' :
+                                          (${incident.etat != null and incident.etat.name() == 'CLOTURE'} ? 'badge-closed' : ''))))"
                                           th:text="${incident.etat}">
                                     </span>
                                 </td>
+
                                 <td>
                                     <button class="action-btn"
                                             th:if="${incident.photos != null and !incident.photos.isEmpty()}"
@@ -331,9 +216,42 @@
                                     </button>
                                     <span th:if="${incident.photos == null or incident.photos.isEmpty()}">—</span>
                                 </td>
-                                <td th:text="${incident.dateCreation}"></td>
+
+                                <td th:text="${incident.dateCreation != null ? #temporals.format(incident.dateCreation,'dd/MM/yyyy HH:mm') : '—'}">—</td>
+
+                                <!-- ✅ Feedback : affiché seulement si RESOLUE -->
+                                <td>
+                                    <div th:if="${incident.etat != null and incident.etat.name() == 'RESOLUE'}"
+                                         class="feedback-box">
+
+                                        <form th:action="@{'/citoyen/incidents/' + ${incident.id} + '/feedback'}"
+                                              method="post">
+                                            <input type="hidden" th:if="${_csrf != null}"
+                                                   th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                                            <textarea name="commentaire" required rows="3"
+                                                      placeholder="Écrivez votre feedback (obligatoire) ..."></textarea>
+
+                                            <div class="feedback-actions">
+                                                <label>
+                                                    <input type="checkbox" name="cloturer" value="true">
+                                                    Je confirme que c’est résolu (Clôturer)
+                                                </label>
+
+                                                <button type="submit" class="primary-btn">
+                                                    <i class="fas fa-paper-plane"></i> Envoyer
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                    <div th:if="${incident.etat == null or incident.etat.name() != 'RESOLUE'}">
+                                        —
+                                    </div>
+                                </td>
                             </tr>
                             </tbody>
+
                         </table>
                     </div>
                 </div>
@@ -343,7 +261,7 @@
     </main>
 </div>
 
-<!-- MODAL -->
+<!-- MODAL PHOTOS -->
 <div id="photoModal" class="photo-modal">
     <div class="photo-modal-content">
         <span class="close" onclick="closePhotos()">&times;</span>
@@ -360,7 +278,7 @@
 
         photos.split(',').forEach(p => {
             const img = document.createElement('img');
-            img.src = '/uploads/incidents/' + p;
+            img.src = '/uploads/incidents/' + p.trim();
             img.onclick = function() {
                 window.open(this.src, '_blank');
             };
@@ -373,8 +291,6 @@
     function closePhotos() {
         document.getElementById('photoModal').style.display = 'none';
     }
-
-
 </script>
 
 </body>

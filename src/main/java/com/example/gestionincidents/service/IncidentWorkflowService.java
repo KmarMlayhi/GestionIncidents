@@ -5,17 +5,21 @@ import com.example.gestionincidents.repository.IncidentRepository;
 import com.example.gestionincidents.repository.UtilisateurRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.gestionincidents.service.MailService;
 
 @Service
 public class IncidentWorkflowService {
 
     private final IncidentRepository incidentRepository;
     private final UtilisateurRepository utilisateurRepository;
+    private final MailService mailService;
 
     public IncidentWorkflowService(IncidentRepository incidentRepository,
-                                   UtilisateurRepository utilisateurRepository) {
+                                   UtilisateurRepository utilisateurRepository,
+                                   MailService mailService) {
         this.incidentRepository = incidentRepository;
         this.utilisateurRepository = utilisateurRepository;
+        this.mailService = mailService;
     }
 
     @Transactional
@@ -68,6 +72,30 @@ public class IncidentWorkflowService {
         }
 
         incidentRepository.save(incident);
+        Utilisateur citoyen = incident.getCitoyen();
+
+        String agentFullName = agent.getPrenom() + " " + agent.getNom();
+        String citizenFullName = (citoyen != null) ? (citoyen.getPrenom() + " " + citoyen.getNom()) : "Citoyen";
+
+        mailService.sendIncidentAssignedToAgent(
+                agent.getEmail(),
+                agentFullName,
+                incident.getId(),
+                incident.getTitre(),
+                incident.getCategorie() != null ? incident.getCategorie().name() : null,
+                incident.getQuartier() != null ? incident.getQuartier().getNom() : null,
+                incident.getPriorite() != null ? incident.getPriorite().name() : null
+        );
+
+        if (citoyen != null) {
+            mailService.sendIncidentTakenInChargeToCitizen(
+                    citoyen.getEmail(),
+                    citizenFullName,
+                    incident.getId(),
+                    incident.getTitre(),
+                    agentFullName
+            );
+        }
     }
 
     @Transactional
@@ -88,11 +116,10 @@ public class IncidentWorkflowService {
             throw new IllegalStateException("Impossible de désassigner un incident clôturé.");
         }
 
-        // Vérif simple : si admin normal, incident doit être dans son périmètre (département)
-        // (si tu veux strict, on peut vérifier categorie vs departement de l'admin)
-        // Ici on laisse simple.
-
         incident.setAgentAssigne(null);
+        if (incident.getEtat() == EtatIncident.PRISE_EN_CHARGE) {
+            incident.setEtat(EtatIncident.NOUVEAU);
+        }
         incidentRepository.save(incident);
     }
 }

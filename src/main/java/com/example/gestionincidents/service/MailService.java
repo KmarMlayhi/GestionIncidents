@@ -81,6 +81,149 @@ public class MailService {
         message.setText(texte);
         mailSender.send(message);
     }
+    public void send(String to, String subject, String text) {
+        if (to == null || to.isBlank()) return;
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setFrom(from);
+        message.setSubject(subject);
+        message.setText(text);
+        mailSender.send(message);
+    }
+    //envoyer mail au agent lorsqu'on lui assigne un incident
+    public void sendIncidentAssignedToAgent(String to,
+                                            String agentFullName,
+                                            Long incidentId,
+                                            String titre,
+                                            String categorie,
+                                            String quartier,
+                                            String priorite) {
+
+        String subject = " Nouvel incident assigné -  " + priorite;
+
+        String text = "Bonjour " + agentFullName + ",\n\n"
+                + "Un nouvel incident vient de vous être assigné.\n\n"
+                + "Détails :\n"
+                + " • Titre : " + (titre != null ? titre : "—") + "\n"
+                + " • Catégorie : " + (categorie != null ? categorie : "—") + "\n"
+                + " • Quartier : " + (quartier != null ? quartier : "—") + "\n"
+                + " • Priorité : " + (priorite != null ? priorite : "NON DÉFINIE") + "\n\n"
+                + "Connectez-vous à votre espace agent pour le prendre en charge.\n\n"
+                + "Cordialement,\n"
+                + "Plateforme de gestion des incidents";
+
+        send(to, subject, text);
+    }
+
+    //envoyer mail au citoyen pour lui confirmer que son incident est prise en charge c bn
+    public void sendIncidentTakenInChargeToCitizen(String to,
+                                                   String citizenFullName,
+                                                   Long incidentId,
+                                                   String titre,
+                                                   String agentFullName) {
+
+        String subject = "Votre incident -  " + titre + " est pris en charge";
+
+        String text = "Bonjour " + citizenFullName + ",\n\n"
+                + "Votre incident a bien été pris en charge par nos services.\n\n"
+                + " • Titre : " + (titre != null ? titre : "—") + "\n"
+                + " • Agent assigné : " + (agentFullName != null ? agentFullName : "—") + "\n\n"
+                + "Vous serez notifié des prochaines étapes.\n\n"
+                + "Cordialement,\n"
+                + "Plateforme de gestion des incidents";
+
+        send(to, subject, text);
+    }
+    //mails aux citoyen pour passer de prise en charge en En reoslution et apres en RESOLUE
+    public void sendInterventionEnCoursToCitizen(String to,
+                                                 String citizenFullName,
+                                                 Long incidentId,
+                                                 String titre,
+                                                 String agentFullName) {
+
+        String subject = "Intervention en cours - Incident " + titre;
+
+        String text = "Bonjour " + citizenFullName + ",\n\n"
+                + "Nous vous informons que l’intervention est en cours pour votre incident.\n\n"
+                + " • Titre : " + (titre != null ? titre : "—") + "\n"
+                + " • Agent : " + (agentFullName != null ? agentFullName : "—") + "\n\n"
+                + "Vous serez notifié dès que l’incident sera marqué comme résolu.\n\n"
+                + "Cordialement,\n"
+                + "Plateforme de gestion des incidents";
+
+        send(to, subject, text);
+    }
+
+    public void sendIncidentResoluDemandeFeedbackToCitizen(String to,
+                                                           String citizenFullName,
+                                                           Long incidentId,
+                                                           String titre) {
+
+        String subject = " Incident résolu - Merci de donner votre feedback (#" + titre + ")";
+
+        String text = "Bonjour " + citizenFullName + ",\n\n"
+                + "Votre incident a été marqué comme RÉSOLU.\n\n"
+                + " • Titre : " + (titre != null ? titre : "—") + "\n\n"
+                + " • Veuillez consulter la liste de vos incidents pour voir la photo de l’intervention.\n"
+                + "Ensuite, merci d’écrire votre feedback :\n"
+                + " - Si tout est OK, cochez “Clôturer”, ecrivez votre commentaire et envoyez.\n"
+                + " - Sinon, envoyez votre commentaire sans clôturer.\n\n"
+                + "Cordialement,\n"
+                + "Plateforme de gestion des incidents";
+
+        send(to, subject, text);
+    }
+
+    //mails envoyer aus agents selon feedback du citoyen
+    public void sendFeedbackClotureToAgent(String to,
+                                           String agentFullName,
+                                           Long incidentId,
+                                           String titre,
+                                           String commentaire,
+                                           String citoyenFullName) {
+
+        String subject = "Incident clôturé par le citoyen - (" + titre + ")";
+
+        String text = "Bonjour " + agentFullName + ",\n\n"
+                + "Le citoyen a confirmé la résolution et a clôturé l’incident.\n\n"
+                + " • Titre : " + (titre != null ? titre : "—") + "\n"
+                + " • Citoyen : " + (citoyenFullName != null ? citoyenFullName : "—") + "\n\n"
+                + "Feedback :\n"
+                + commentaire + "\n\n"
+                + "État final : CLOTURE ! \n\n"
+                + "Cordialement,\n"
+                + "Plateforme de gestion des incidents";
+
+        send(to, subject, text);
+    }
+
+    public void sendFeedbackNonClotureToAgent(String to,
+                                              String agentFullName,
+                                              Long incidentId,
+                                              String titre,
+                                              String commentaire,
+                                              String citoyenFullName) {
+
+        String subject = " Feedback négatif - Reprise demandée pour (" + titre + ")";
+
+        String text = "Bonjour " + agentFullName + ",\n\n"
+                + "Le citoyen n’a pas validé la résolution. L’incident n’est pas clôturé.\n\n"
+                + " • Titre : " + (titre != null ? titre : "—") + "\n"
+                + " • Citoyen : " + (citoyenFullName != null ? citoyenFullName : "—") + "\n\n"
+                + "Feedback :\n"
+                + commentaire + "\n\n"
+                + "État actuel : RESOLUE (non clôturé)\n"
+                + "Action attendue : Reprendre et refaire l’intervention (retour EN_RESOLUTION).\n\n"
+                + "Cordialement,\n"
+                + "Plateforme de gestion des incidents";
+
+        send(to, subject, text);
+    }
+
+
+
+
 
 
 }

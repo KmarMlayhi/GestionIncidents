@@ -4,6 +4,7 @@ import com.example.gestionincidents.entity.*;
 import com.example.gestionincidents.repository.IncidentRepository;
 import com.example.gestionincidents.repository.PhotoRepository;
 import com.example.gestionincidents.repository.UtilisateurRepository;
+import com.example.gestionincidents.service.CitizenFeedbackService;
 import com.example.gestionincidents.service.ConnectedUserInfoService;
 import com.example.gestionincidents.web.IncidentForm;
 import org.springframework.security.core.Authentication;
@@ -30,18 +31,20 @@ public class CitizenIncidentController {
     private final PhotoRepository photoRepository;
     private final ConnectedUserInfoService connectedUserInfoService;
     private final QuartierRepository quartierRepository;
-
+    private final CitizenFeedbackService citizenFeedbackService;
 
     public CitizenIncidentController(IncidentRepository incidentRepository,
                                      UtilisateurRepository utilisateurRepository,
                                      PhotoRepository photoRepository,
                                      ConnectedUserInfoService connectedUserInfoService,
-                                        QuartierRepository quartierRepository){
+                                     QuartierRepository quartierRepository,
+                                     CitizenFeedbackService citizenFeedbackService){
         this.incidentRepository = incidentRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.photoRepository = photoRepository;
         this.quartierRepository = quartierRepository;
         this.connectedUserInfoService = connectedUserInfoService;
+        this.citizenFeedbackService = citizenFeedbackService;
     }
 
     // 🟦 1) PAGE "MES INCIDENTS"  => GET /citoyen/incidents
@@ -180,4 +183,20 @@ public class CitizenIncidentController {
             photoRepository.save(photo);
         }
     }
+    @PostMapping("/{id}/feedback")
+    public String envoyerFeedback(@PathVariable Long id,
+                                  @RequestParam("commentaire") String commentaire,
+                                  @RequestParam(value = "cloturer", defaultValue = "false") boolean cloturer,
+                                  Authentication authentication,
+                                  RedirectAttributes ra) {
+        try {
+            citizenFeedbackService.envoyerFeedback(id, commentaire, cloturer, authentication.getName());
+            ra.addFlashAttribute("successMessage",
+                    cloturer ? "Merci ! Incident clôturé." : "Merci ! Votre feedback a été enregistré.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/citoyen/incidents";
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.example.gestionincidents.service;
 
 import com.example.gestionincidents.entity.*;
+import com.example.gestionincidents.repository.IncidentFeedbackRepository;
 import com.example.gestionincidents.repository.IncidentRepository;
 import com.example.gestionincidents.repository.PhotoRepository;
 import com.example.gestionincidents.repository.UtilisateurRepository;
@@ -23,12 +24,17 @@ public class AgentIncidentService {
     private final IncidentRepository incidentRepository;
     private final UtilisateurRepository utilisateurRepository;
     private final PhotoRepository photoRepository;
+    private final IncidentFeedbackRepository feedbackRepository;
+    private final MailService mailService;
 
     public AgentIncidentService(IncidentRepository incidentRepository,
-                                UtilisateurRepository utilisateurRepository, PhotoRepository photoRepository) {
+                                UtilisateurRepository utilisateurRepository, PhotoRepository photoRepository,
+                                IncidentFeedbackRepository feedbackRepository, MailService mailService) {
         this.incidentRepository = incidentRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.photoRepository = photoRepository;
+        this.feedbackRepository = feedbackRepository;
+        this.mailService = mailService;
     }
 
     @Transactional(readOnly = true)
@@ -103,6 +109,18 @@ public class AgentIncidentService {
             incident.setEtat(EtatIncident.RESOLUE);
             incidentRepository.save(incident);
 
+            // ✅ mail citoyen : résolu + demander feedback
+            try {
+                Utilisateur c = incident.getCitoyen();
+                if (c != null) {
+                    String citizenName = c.getPrenom() + " " + c.getNom();
+                    mailService.sendIncidentResoluDemandeFeedbackToCitizen(
+                            c.getEmail(), citizenName, incident.getId(), incident.getTitre()
+                    );
+                }
+            } catch (Exception ignored) {}
+
+
         } catch (IOException e) {
             throw new IllegalStateException("Erreur lors de l'enregistrement de la photo.");
         }
@@ -129,6 +147,19 @@ public class AgentIncidentService {
 
         incident.setEtat(EtatIncident.EN_RESOLUTION);
         incidentRepository.save(incident);
+
+    // ✅ mail citoyen
+        try {
+            Utilisateur c = incident.getCitoyen();
+            if (c != null) {
+                String citizenName = c.getPrenom() + " " + c.getNom();
+                String agentName = agent.getPrenom() + " " + agent.getNom();
+                mailService.sendInterventionEnCoursToCitizen(
+                        c.getEmail(), citizenName, incident.getId(), incident.getTitre(), agentName
+                );
+            }
+        } catch (Exception ignored) {}
+
     }
 
     private Utilisateur getAgentOrThrow(String email) {
@@ -139,4 +170,44 @@ public class AgentIncidentService {
         }
         return agent;
     }
+
+    @Transactional(readOnly = true)
+    public IncidentFeedback getDernierFeedback(Long incidentId, String agentEmail) {
+        Utilisateur agent = getAgentOrThrow(agentEmail);
+
+        Incident incident = incidentRepository.findByIdAndAgent(incidentId, agent.getId());
+        if (incident == null) throw new SecurityException("Incident non assigné à cet agent.");
+
+        return feedbackRepository.findTopByIncidentIdOrderByDateFeedbackDesc(incidentId);
+    }
+
+    @Transactional
+    public void reprendreEnResolution(Long incidentId, String agentEmail) {
+        Utilisateur agent = getAgentOrThrow(agentEmail);
+
+        Incident incident = incidentRepository.findByIdAndAgent(incidentId, agent.getId());
+        if (incident == null) throw new SecurityException("Incident non assigné à cet agent.");
+
+        if (incident.getEtat() == EtatIncident.CLOTURE) {
+            throw new IllegalStateException("Impossible : incident déjà clôturé.");
+        }
+
+        if (incident.getEtat() != EtatIncident.RESOLUE) {
+            throw new IllegalStateException("Reprise possible uniquement si l'incident est 'RESOLUE'.");
+        }
+
+        IncidentFeedback last = feedbackRepository.findTopByIncidentIdOrderByDateFeedbackDesc(incidentId);
+        if (last == null) {
+            throw new IllegalStateException("Aucun feedback citoyen disponible pour reprendre.");
+        }
+
+        if (last.isCloturer()) {
+            throw new IllegalStateException("Le citoyen a demandé la clôture : reprise interdite.");
+        }
+
+        incident.setEtat(EtatIncident.EN_RESOLUTION);
+        incidentRepository.save(incident);
+    }
+
+
 }

@@ -302,6 +302,24 @@
                                 <span>Créé le </span>
                                 <span th:text="${i.dateCreation != null ? #temporals.format(i.dateCreation,'dd/MM/yyyy HH:mm') : '-'}">-</span>
                             </div>
+                            <div class="row" th:if="${lastFeedback[i.id] != null}">
+                                <i class="fas fa-comment-dots"></i>
+                                <span>Feedback citoyen :</span>
+                                <b th:text="${lastFeedback[i.id].commentaire}">—</b>
+                            </div>
+
+                            <div class="row muted" th:if="${lastFeedback[i.id] != null}">
+                                <i class="fas fa-clock"></i>
+                                <span>Le </span>
+                                <span th:text="${#temporals.format(lastFeedback[i.id].dateFeedback,'dd/MM/yyyy HH:mm')}">—</span>
+                            </div>
+
+                            <div class="row muted"
+                                 th:if="${i.etat != null and i.etat.name() == 'RESOLUE' and lastFeedback[i.id] == null}">
+                                <i class="fas fa-hourglass-half"></i>
+                                <span>En attente du feedback du citoyen</span>
+                            </div>
+
                         </div>
 
                         <div class="card-actions">
@@ -345,6 +363,18 @@
                                     <i class="fas fa-check"></i> Résolu
                                 </button>
                             </form>
+                            <form th:if="${i.etat != null and i.etat.name() == 'RESOLUE'
+                                      and lastFeedback[i.id] != null
+                                      and !lastFeedback[i.id].cloturer}"
+                                  th:action="@{'/agent/incidents/' + ${i.id} + '/reprendre'}"
+                                  method="post">
+                                <input type="hidden" th:if="${_csrf != null}"
+                                       th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                <button class="btn btn-warning" type="submit">
+                                    <i class="fas fa-rotate-left"></i> Reprendre La Résolution
+                                </button>
+                            </form>
+
 
                         </div>
                     </div>
