@@ -60,6 +60,6 @@ public class CitizenController {
         // Passer l’objet au template
         model.addAttribute("citoyen", citoyen);
 
-        return "citizen-profile"; // => templates/citizen-profile.html
+        return "citizen-profile";
     }
 }

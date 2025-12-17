@@ -84,7 +84,7 @@ public class CitizenDashboardService {
                 ));
 
         data.setByCategorie(byCat);
-        // 5 derniers incidents (tri en mémoire)
+        // 5 derniers incidents
         List<Incident> last = incidentRepository.findTop5ByCitoyenOrderByDateCreationDesc(citoyen);
         data.setLastIncidents(last);
 

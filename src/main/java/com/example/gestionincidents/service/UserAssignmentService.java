@@ -17,22 +17,22 @@ public class UserAssignmentService {
         this.utilisateurRepository = utilisateurRepository;
     }
 
-    // 🔹 Récupérer tous les admins (responsables possibles)
+    // Récupérer tous les admins
     public List<Utilisateur> getAllAdmins() {
         return utilisateurRepository.findByRole(UserRole.ADMIN);
     }
 
-    // 🔹 Récupérer tous les agents sans admin (à affecter)
+    //  Récupérer tous les agents sans admin (à affecter)
     public List<Utilisateur> getAgentsWithoutAdmin() {
         return utilisateurRepository.findByRoleAndAdministrateurIsNull(UserRole.AGENT);
     }
 
-    // 🔹 Récupérer tous les agents (utile si tu veux aussi réaffecter)
+    //  Récupérer tous les agents
     public List<Utilisateur> getAllAgents() {
         return utilisateurRepository.findByRole(UserRole.AGENT);
     }
 
-    // ✅ Affecter une liste d’agents à un admin
+    //  Affecter une liste d’agents à un admin
     @Transactional
     public void assignAgentsToAdmin(Long adminId, List<Long> agentIds) {
         Utilisateur admin = utilisateurRepository.findById(adminId)

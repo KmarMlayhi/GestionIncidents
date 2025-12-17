@@ -124,7 +124,7 @@ public class AccountService {
 
         UserDetails securityUser = User.withUsername(email)
                 .password(encoded)
-                .roles("ADMIN")   // => ROLE_ADMIN
+                .roles("ADMIN")
                 .build();
         userDetailsManager.createUser(securityUser);
 
@@ -139,7 +139,7 @@ public class AccountService {
 
         utilisateurRepository.save(u);
 
-        //  On renvoie le mot de passe en clair pour l'email
+
         return rawPassword;
     }
 

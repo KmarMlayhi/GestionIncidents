@@ -67,7 +67,7 @@ public class AgentIncidentService {
             throw new IllegalStateException("Transition refusée : l'incident doit être 'EN_RESOLUTION'.");
         }
 
-        // ✅ photo obligatoire
+        // photo obligatoire
         if (photo == null || photo.isEmpty()) {
             throw new IllegalStateException("Veuillez ajouter une photo de preuve avant de passer à 'RESOLUE'.");
         }
@@ -77,7 +77,7 @@ public class AgentIncidentService {
             throw new IllegalStateException("Format invalide : veuillez uploader une image.");
         }
 
-        // ✅ Enregistrer le fichier dans static/uploads/incidents (projet de classe)
+        //  Enregistrer le fichier dans static/uploads/incidents
         Path uploadDir = Paths.get("src", "main", "resources", "static", "uploads", "incidents");
         try {
             Files.createDirectories(uploadDir);
@@ -92,24 +92,24 @@ public class AgentIncidentService {
 
             Files.copy(photo.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
 
-            // ✅ Insert dans la table Photo
+            // Insert dans la table Photo
             Photo p = new Photo();
             p.setNomPhoto(fileName);
             p.setType(contentType);
-            p.setChemin(uploadDir.toString());     // ex: src/main/resources/static/uploads/incidents
+            p.setChemin(uploadDir.toString());
             p.setDateUpload(LocalDateTime.now());
             p.setIncident(incident);
 
             photoRepository.save(p);
 
-            // (optionnel mais propre: garder la liste sync en mémoire)
+
             incident.getPhotos().add(p);
 
-            // ✅ Changer l'état
+            //  Changer l'état
             incident.setEtat(EtatIncident.RESOLUE);
             incidentRepository.save(incident);
 
-            // ✅ mail citoyen : résolu + demander feedback
+            //  mail citoyen : résolu + demander feedback
             try {
                 Utilisateur c = incident.getCitoyen();
                 if (c != null) {
@@ -140,7 +140,7 @@ public class AgentIncidentService {
             throw new IllegalStateException("Impossible : incident déjà résolu/clôturé.");
         }
 
-        // ✅ autorisé seulement si PRISE_EN_CHARGE
+        //  autorisé seulement si PRISE_EN_CHARGE
         if (etat != EtatIncident.PRISE_EN_CHARGE) {
             throw new IllegalStateException("Transition refusée : l'incident doit être 'PRISE_EN_CHARGE'.");
         }
@@ -148,7 +148,7 @@ public class AgentIncidentService {
         incident.setEtat(EtatIncident.EN_RESOLUTION);
         incidentRepository.save(incident);
 
-    // ✅ mail citoyen
+    //  mail citoyen
         try {
             Utilisateur c = incident.getCitoyen();
             if (c != null) {

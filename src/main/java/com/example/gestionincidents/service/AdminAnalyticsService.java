@@ -33,7 +33,7 @@ public class AdminAnalyticsService {
             throw new SecurityException("Accès refusé : rôle ADMIN requis.");
         }
 
-        // périmètre : agents de cet admin (ou tous si SUPER_ADMIN)
+        // agents de cet admin
         List<Utilisateur> agents;
         if (admin.getRole() == UserRole.SUPER_ADMIN) {
             agents = utilisateurRepository.findByRole(UserRole.AGENT);
@@ -41,7 +41,7 @@ public class AdminAnalyticsService {
             agents = utilisateurRepository.findAgentsByAdministrateur(admin.getId());
         }
 
-        // si aucun agent, VM vide
+        // si aucun agent, DTO  vide
         if (agents.isEmpty()) {
             return AdminDashboardDTO.empty();
         }
@@ -55,7 +55,7 @@ public class AdminAnalyticsService {
         long resolue = all.stream().filter(i -> i.getEtat() == EtatIncident.RESOLUE).count();
         long cloture = all.stream().filter(i -> i.getEtat() == EtatIncident.CLOTURE).count();
 
-        // délai moyen de résolution (ici: incidents CLOTURE avec dateCloture)
+        // délai moyen de résolution ( incidents CLOTURE avec dateCloture)
         List<Incident> clotures = all.stream()
                 .filter(i -> i.getEtat() == EtatIncident.CLOTURE && i.getDateCreation() != null && i.getDateCloture() != null)
                 .toList();

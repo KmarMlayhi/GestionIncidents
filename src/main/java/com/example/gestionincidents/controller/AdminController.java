@@ -34,11 +34,6 @@ public class AdminController {
     private final AdminAnalyticsService adminAnalyticsService;
     private final AdminPdfReportService adminPdfReportService;
     private final RapportRepository rapportRepository;
-
-
-
-
-    // ✅ nouveau : service workflow
     private final IncidentWorkflowService workflowService;
 
     public AdminController(ConnectedUserInfoService connectedUserInfoService,
@@ -98,7 +93,7 @@ public class AdminController {
 
         String email = authentication.getName();
 
-        // data (KPIs + lastIncidents) déjà calculés
+        // data (KPIs + lastIncidents)
         AdminDashboardDTO data = adminAnalyticsService.buildDashboard(email);
 
         // agents de cet admin
@@ -109,7 +104,7 @@ public class AdminController {
                 ? utilisateurRepository.findByRole(UserRole.AGENT)
                 : utilisateurRepository.findAgentsByAdministrateur(admin.getId());
 
-        // compter incidents par agent (simple)
+        // compter incidents par agent
         List<Incident> all = incidentRepository.findByAgentAssigneIn(agents);
         Map<Long, Long> nbParAgent = all.stream()
                 .filter(i -> i.getAgentAssigne() != null)
@@ -123,7 +118,7 @@ public class AdminController {
         r.setAuteur(admin);
         r.setDateGeneration(java.time.LocalDate.now());
 
-        // un texte simple
+
         r.setTexte("Rapport PDF généré. Total=" + data.getTotal()
                 + ", Nouveaux=" + data.getNouveaux()
                 + ", En résolution=" + data.getEnResolution()
@@ -137,7 +132,7 @@ public class AdminController {
     }
 
 
-    // ✅ Page : incidents du département + liste des agents de cet admin
+    // incidents du département + liste des agents de cet admin
     @GetMapping("/incidents")
     public String adminIncidents(Model model, Authentication authentication) {
 
@@ -205,7 +200,7 @@ public class AdminController {
         return "admin-incidents";
     }
 
-    // ✅ Priorité : (tu peux la laisser ici, ce n’est pas une “transition d’état”)
+    // Priorité
     @PostMapping("/incidents/{id}/priorite")
     public String updatePriorite(@PathVariable Long id,
                                  @RequestParam(name = "priorite", required = false) String priorite,
@@ -232,7 +227,7 @@ public class AdminController {
         return "redirect:/admin/incidents";
     }
 
-    // ✅ Assignation : maintenant le controller appelle le SERVICE
+    // Assignation
     @PostMapping("/incidents/{incidentId}/assign-agent")
     public String assignAgent(@PathVariable Long incidentId,
                               @RequestParam(name = "agentId", required = false) Long agentId,
@@ -243,11 +238,11 @@ public class AdminController {
             String adminEmail = authentication.getName();
 
             if (agentId == null) {
-                // optionnel : désassigner
+                //  désassigner
                 workflowService.desassignerIncident(incidentId, adminEmail);
                 ra.addFlashAttribute("successMessage", "Incident désassigné.");
             } else {
-                // ✅ ici le service met aussi l’état à PRISE_EN_CHARGE automatiquement
+                //  l’état à PRISE_EN_CHARGE
                 workflowService.assignerIncident(incidentId, agentId, adminEmail);
                 ra.addFlashAttribute("successMessage", "Agent assigné. Statut => PRISE_EN_CHARGE.");
             }

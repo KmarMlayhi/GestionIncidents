@@ -6,7 +6,7 @@ public class AdminAgentForm {
     private String prenom;
     private String email;
     private String phone;
-    private String role; // "ADMIN" ou "AGENT"
+    private String role;
     private String departement;
 
     // Getters et setters

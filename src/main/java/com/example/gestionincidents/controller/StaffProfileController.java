@@ -41,11 +41,10 @@ public class StaffProfileController {
         // pour l’agent : afficher admin responsable (si existe)
         model.addAttribute("admin", user.getAdministrateur());
 
-        // ✅ ici on choisit la vue selon le rôle
         if (user.getRole() == UserRole.ADMIN) {
-            return "admin-profile";   // templates/admin-profile.html
+            return "admin-profile";
         }
-        return "agent-profile";       // templates/agent-profile.html
+        return "agent-profile";
     }
 }
 

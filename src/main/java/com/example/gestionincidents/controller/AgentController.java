@@ -50,7 +50,7 @@ public class AgentController {
 
         String email = authentication.getName();
         List<Incident> incidents = agentIncidentService.getIncidentsAssignes(email);
-        // ✅ ajouter lastFeedback dans le model
+
         Map<Long, IncidentFeedback> lastFeedback = new HashMap<>();
         for (Incident inc : incidents) {
             IncidentFeedback fb = agentIncidentService.getDernierFeedback(inc.getId(), email);
@@ -58,7 +58,7 @@ public class AgentController {
         }
 
         model.addAttribute("incidents", incidents);
-        model.addAttribute("lastFeedback", lastFeedback); // ✅ dispo dans agent-incidents.html
+        model.addAttribute("lastFeedback", lastFeedback);
 
 
         model.addAttribute("incidents", incidents);
@@ -73,7 +73,7 @@ public class AgentController {
                                      Authentication authentication,
                                      RedirectAttributes ra) {
         try {
-            agentIncidentService.passerEnResolution(id, authentication.getName()); // ✅
+            agentIncidentService.passerEnResolution(id, authentication.getName());
             ra.addFlashAttribute("successMessage", "Incident passé en résolution.");
         } catch (Exception e) {
             ra.addFlashAttribute("errorMessage", e.getMessage());
@@ -82,7 +82,7 @@ public class AgentController {
     }
 
 
-    // ✅ EN_RESOLUTION -> RESOLUE avec upload photo
+    // EN_RESOLUTION -> RESOLUE avec upload photo
     @PostMapping("/incidents/{id}/resolu")
     public String marquerResolu(@PathVariable Long id,
                                 @RequestParam("photo") MultipartFile photo,

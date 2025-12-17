@@ -91,6 +91,7 @@ public class MailService {
         message.setText(text);
         mailSender.send(message);
     }
+
     //envoyer mail au agent lorsqu'on lui assigne un incident
     public void sendIncidentAssignedToAgent(String to,
                                             String agentFullName,

@@ -56,7 +56,7 @@ public class AuthController {
             // Générer un code à 6 chiffres
             String code = String.format("%06d", new Random().nextInt(1_000_000));
 
-            // Supprimer d'éventuelles anciennes demandes pour cet email
+
             verificationCodeRepository.deleteByEmail(form.getEmail());
 
             // Sauvegarder la demande d'inscription en attente

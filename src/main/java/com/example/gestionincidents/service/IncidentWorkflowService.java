@@ -37,7 +37,7 @@ public class IncidentWorkflowService {
         Incident incident = incidentRepository.findById(incidentId)
                 .orElseThrow(() -> new IllegalStateException("Incident introuvable : " + incidentId));
 
-        // interdit si déjà clôturé / résolu (tu peux ajuster)
+        // interdit si déjà clôturé
         if (incident.getEtat() == EtatIncident.CLOTURE || incident.getEtat() == EtatIncident.RESOLUE) {
             throw new IllegalStateException("Impossible d'assigner un incident déjà résolu/clôturé.");
         }
@@ -51,12 +51,12 @@ public class IncidentWorkflowService {
         }
 
         // 4) Vérifier que l'agent appartient à cet admin
-        // (agent.administrateur doit être l'admin)
+
         if (agent.getAdministrateur() == null || agent.getAdministrateur().getId() == null) {
             throw new SecurityException("Cet agent n'a pas d'administrateur responsable.");
         }
 
-        // ⚠️ si SUPER_ADMIN : tu peux autoriser tout (au choix)
+
         if (admin.getRole() != UserRole.SUPER_ADMIN) {
             if (!agent.getAdministrateur().getId().equals(admin.getId())) {
                 throw new SecurityException("Vous ne pouvez assigner que vos propres agents.");
@@ -66,7 +66,7 @@ public class IncidentWorkflowService {
         // 5) Assigner
         incident.setAgentAssigne(agent);
 
-        // ✅ Transition automatique : NOUVEAU -> PRISE_EN_CHARGE
+        //  Transition automatique : NOUVEAU -> PRISE_EN_CHARGE
         if (incident.getEtat() == null || incident.getEtat() == EtatIncident.NOUVEAU) {
             incident.setEtat(EtatIncident.PRISE_EN_CHARGE);
         }
@@ -111,7 +111,7 @@ public class IncidentWorkflowService {
         Incident incident = incidentRepository.findById(incidentId)
                 .orElseThrow(() -> new IllegalStateException("Incident introuvable : " + incidentId));
 
-        // Option : empêcher désassignation si clôturé
+
         if (incident.getEtat() == EtatIncident.CLOTURE) {
             throw new IllegalStateException("Impossible de désassigner un incident clôturé.");
         }

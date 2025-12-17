@@ -23,11 +23,11 @@ public class SuperAdminAnalyticsService {
     @Transactional(readOnly = true)
     public SuperAdminDashboardDTO buildDashboard() {
 
-        // Admins = rôle ADMIN (si tu veux inclure SUPER_ADMIN aussi, dis-moi)
+
         List<Utilisateur> admins = utilisateurRepository.findByRole(UserRole.ADMIN);
         List<Utilisateur> agents = utilisateurRepository.findByRole(UserRole.AGENT);
 
-        // Group agents by adminId (évite de faire findAgentsByAdministrateur dans une boucle)
+        // Group agents by adminId
         Map<Long, List<Utilisateur>> agentsByAdminId = agents.stream()
                 .filter(a -> a.getAdministrateur() != null)
                 .collect(Collectors.groupingBy(a -> a.getAdministrateur().getId()));
@@ -86,7 +86,7 @@ public class SuperAdminAnalyticsService {
 
         String email = (u.getEmail() == null || u.getEmail().isBlank()) ? "—" : u.getEmail();
 
-        // si ton getter n'est pas getPhone(), remplace par le bon (getTelephone(), etc.)
+
         String phone = (u.getPhone() == null || u.getPhone().isBlank()) ? "—" : u.getPhone();
 
         return SuperAdminDashboardDTO.PersonVM.builder()

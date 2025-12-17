@@ -44,17 +44,17 @@ public class SuperAdminController {
         this.superAdminAnalyticsService = superAdminAnalyticsService;
     }
 
-    // 🟦 1) Dashboard super admin (pas de formulaire ici)
+    // 1) Dashboard super admin
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication authentication) {
         SuperAdminDashboardDTO data = superAdminAnalyticsService.buildDashboard();
         model.addAttribute("data", data);
         connectedUserInfoService.addConnectedUserInfo(model, authentication);
 
-        return "superadmin-dashboard";   // templates/superadmin-dashboard.html
+        return "superadmin-dashboard";
     }
 
-    // 🟦 2) Page "Créer un compte" (formulaire ADMIN / AGENT)
+    // 2) Page "Créer un compte" (formulaire ADMIN / AGENT)
     @GetMapping("/create-user")
     public String showCreateUserForm(Model model,
                                      Authentication authentication,
@@ -63,10 +63,10 @@ public class SuperAdminController {
 
         connectedUserInfoService.addConnectedUserInfo(model, authentication);
 
-        // Objet formulaire
+
         model.addAttribute("form", new AdminAgentForm());
 
-        // Messages de succès (codes -> texte)
+
         if (success != null) {
             String msg = switch (success) {
                 case "adminCreated" -> "Administrateur créé avec succès.";
@@ -78,7 +78,7 @@ public class SuperAdminController {
             }
         }
 
-        // Messages d'erreur (codes -> texte)
+        // Messages d'erreur
         if (error != null) {
             String msg = switch (error) {
                 case "duplicateEmail" -> "Un compte existe déjà avec cet email.";
@@ -91,10 +91,10 @@ public class SuperAdminController {
             }
         }
 
-        return "superadmin-create-user"; // templates/superadmin-create-user.html
+        return "superadmin-create-user";
     }
 
-    // 🟦 3) Traitement du formulaire pour créer ADMIN ou AGENT
+    // 3) Traitement du formulaire pour créer ADMIN ou AGENT
     @PostMapping("/create-user")
     public String createUser(@ModelAttribute("form") AdminAgentForm form) {
 
@@ -162,7 +162,7 @@ public class SuperAdminController {
             return "redirect:/superadmin/create-user?error=creationFailed";
         }
     }
-    // 🔹 Page d'affectation Admin ↔ Agents
+    //  Page d'affectation Admin Agents
     @GetMapping("/affectations")
     public String showAffectationPage(Model model,
                                       Authentication authentication,
@@ -171,7 +171,7 @@ public class SuperAdminController {
 
         connectedUserInfoService.addConnectedUserInfo(model, authentication);
         List<Utilisateur> admins = userAssignmentService.getAllAdmins();
-        List<Utilisateur> agents = userAssignmentService.getAllAgents(); // ou getAgentsWithoutAdmin()
+        List<Utilisateur> agents = userAssignmentService.getAllAgents();
 
         model.addAttribute("admins", admins);
         model.addAttribute("agents", agents);
@@ -183,10 +183,10 @@ public class SuperAdminController {
             model.addAttribute("errorMessage", error);
         }
 
-        return "superadmin-affectations";   // nom du template Thymeleaf
+        return "superadmin-affectations";
     }
 
-    // 🔹 Traitement de l'affectation
+    //  Traitement de l'affectation
     @PostMapping("/affectations")
     public String assignAgents(@RequestParam("adminId") Long adminId,
                                @RequestParam(name = "agentIds", required = false) List<Long> agentIds,

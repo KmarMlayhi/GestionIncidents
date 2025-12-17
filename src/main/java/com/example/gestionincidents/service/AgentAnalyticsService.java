@@ -70,7 +70,7 @@ public class AgentAnalyticsService {
     }
 
     private AgentDashboardDTO withAdminInfo(Utilisateur agent, AgentDashboardDTO data) {
-        Utilisateur admin = agent.getAdministrateur(); // champ admin_id dans table utilisateur
+        Utilisateur admin = agent.getAdministrateur();
 
         if (admin == null) {
             data.setAdmin(AgentDashboardDTO.AdminDTO.builder()
@@ -87,7 +87,7 @@ public class AgentAnalyticsService {
 
         String email = (admin.getEmail() == null || admin.getEmail().isBlank()) ? "—" : admin.getEmail();
 
-        // si ton getter n’est pas getPhone(), remplace ici
+
         String phone = (admin.getPhone() == null || admin.getPhone().isBlank()) ? "—" : admin.getPhone();
 
         data.setAdmin(AgentDashboardDTO.AdminDTO.builder()

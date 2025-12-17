@@ -62,7 +62,7 @@ public class CitizenIncidentController {
         this.feedbackRepository = feedbackRepository;
     }
 
-    // 🟦 1) PAGE "MES INCIDENTS"  => GET /citoyen/incidents
+    // 1) PAGE "MES INCIDENTS"
     @GetMapping
     public String listIncidents(@RequestParam(defaultValue = "0") int page,
                                 Model model,
@@ -80,7 +80,7 @@ public class CitizenIncidentController {
         List<Incident> incidents = incidentsPage.getContent();
         model.addAttribute("incidents", incidents);
 
-        // ✅ feedbacks seulement pour les incidents de la page actuelle
+
         Map<Long, List<IncidentFeedback>> feedbacksByIncident = new HashMap<>();
         for (Incident inc : incidents) {
             feedbacksByIncident.put(
@@ -90,15 +90,15 @@ public class CitizenIncidentController {
         }
         model.addAttribute("feedbacksByIncident", feedbacksByIncident);
 
-        // ✅ infos pagination
-        model.addAttribute("currentPage", incidentsPage.getNumber());      // 0-based
+        // pagination
+        model.addAttribute("currentPage", incidentsPage.getNumber());
         model.addAttribute("totalPages", incidentsPage.getTotalPages());
         model.addAttribute("totalItems", incidentsPage.getTotalElements());
 
         return "citizen-incidents-list";
     }
 
-    // 🟦 2) Formulaire "nouvel incident" => GET /citoyen/incidents/nouveau
+    // 2) Formulaire "nouvel incident"
     @GetMapping("/nouveau")
     public String showNewIncidentForm(Model model, Authentication authentication) {
 
@@ -106,13 +106,11 @@ public class CitizenIncidentController {
 
         model.addAttribute("incidentForm", new IncidentForm());
         model.addAttribute("categories", CategorieIncident.values());
-        // Si tu ne veux pas que le citoyen choisisse la priorité, commente la ligne ci-dessous :
-        // model.addAttribute("priorites", Priorite.values());
 
-        return "citoyen-incident-form";   // template du formulaire
+        return "citoyen-incident-form";
     }
 
-    // 🟦 3) Traitement du formulaire => POST /citoyen/incidents
+    // 3) Traitement du formulaire
     @PostMapping
     public String createIncident(@ModelAttribute("incidentForm") IncidentForm form,
                                  @RequestParam(name = "photos", required = false) List<MultipartFile> photos,
@@ -124,7 +122,7 @@ public class CitizenIncidentController {
                 .orElseThrow(() -> new IllegalStateException("Citoyen introuvable : " + email));
 
         try {
-            // ✅ 0) Valider les photos AVANT de créer/sauvegarder l'incident
+            // Valider les photos AVANT de créer/sauvegarder l'incident
             validatePhotosOrThrow(photos);
 
             // 1) Construire l'incident
@@ -154,10 +152,10 @@ public class CitizenIncidentController {
                 incident.setQuartier(quartier);
             }
 
-            // ✅ 2) Sauvegarde incident seulement si photos OK
+            // 2) Sauvegarde incident seulement si photos OK
             Incident saved = incidentRepository.save(incident);
 
-            // ✅ 3) Sauvegarder photos
+            // 3) Sauvegarder photos
             if (photos != null && !photos.isEmpty()) {
                 savePhotosForIncident(saved, photos);
             }
@@ -167,9 +165,8 @@ public class CitizenIncidentController {
             return "redirect:/citoyen/incidents";
 
         } catch (IllegalArgumentException ex) {
-            // ✅ Message clair pour l'utilisateur
+
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
-            // ✅ Retourner vers le formulaire (pas la liste)
             return "redirect:/citoyen/incidents/nouveau";
 
         } catch (Exception e) {
@@ -211,7 +208,7 @@ public class CitizenIncidentController {
         }
     }
 
-    // 🟦 4) Upload des photos en local
+    // 4) Upload des photos en local
     private void savePhotosForIncident(Incident incident, List<MultipartFile> files) throws IOException {
 
         Path uploadDir = Paths.get("src/main/resources/static/uploads/incidents");
@@ -221,47 +218,47 @@ public class CitizenIncidentController {
 
         for (MultipartFile file : files) {
 
-            // ❌ Fichier vide
+            //  Fichier vide
             if (file.isEmpty()) {
                 continue;
             }
 
-            // ❌ Taille maximale
+            //  Taille maximale
             if (file.getSize() > MAX_FILE_SIZE) {
                 throw new IllegalArgumentException("Image trop volumineuse (max 5 MB)");
             }
 
-            // ❌ Type MIME non autorisé
+            //  Type MIME non autorisé
             String contentType = file.getContentType();
             if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
                 throw new IllegalArgumentException("Type de fichier non autorisé");
             }
 
-            // ❌ Extension invalide
+            //  Extension invalide
             String original = file.getOriginalFilename();
             if (original == null || !original.matches("(?i).+\\.(jpg|jpeg|png)$")) {
                 throw new IllegalArgumentException("Extension de fichier invalide");
             }
 
-            // ✅ Vérification réelle de l’image (anti-fichier déguisé)
+            //  Vérification réelle de l’image (anti-fichier déguisé)
             BufferedImage image = ImageIO.read(file.getInputStream());
             if (image == null) {
                 throw new IllegalArgumentException("Le fichier n'est pas une image valide");
             }
 
-            // ✅ Génération d’un nom sécurisé
+            //  Génération d’un nom sécurisé
             String extension = original.substring(original.lastIndexOf("."));
             String uniqueName = UUID.randomUUID() + extension;
 
             Path destination = uploadDir.resolve(uniqueName);
 
-            // ✅ Copie sécurisée
+            // Copie sécurisée
             Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
 
-            // ✅ Enregistrement en base
+            //  Enregistrement en base
             Photo photo = new Photo();
             photo.setNomPhoto(uniqueName);
-            photo.setChemin("uploads/incidents"); // chemin relatif (bonne pratique)
+            photo.setChemin("uploads/incidents");
             photo.setType(contentType);
             photo.setDateUpload(LocalDateTime.now());
             photo.setIncident(incident);

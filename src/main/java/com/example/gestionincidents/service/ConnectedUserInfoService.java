@@ -23,7 +23,7 @@ public class ConnectedUserInfoService {
 
         Utilisateur u = utilisateurRepository.findByEmail(email)
                 .orElseGet(() -> {
-                    // Cas du SUPER_ADMIN créé côté Spring Security uniquement
+
                     Utilisateur nouveau = new Utilisateur();
                     nouveau.setEmail(email);
 
@@ -31,7 +31,7 @@ public class ConnectedUserInfoService {
                     UserRole role = UserRole.CITOYEN;
                     String authority = authentication.getAuthorities().stream()
                             .findFirst()
-                            .map(a -> a.getAuthority()) // ex : "ROLE_SUPER_ADMIN"
+                            .map(a -> a.getAuthority())
                             .orElse("ROLE_CITOYEN");
 
                     if ("ROLE_SUPER_ADMIN".equals(authority)) role = UserRole.SUPER_ADMIN;
@@ -39,7 +39,7 @@ public class ConnectedUserInfoService {
                     else if ("ROLE_AGENT".equals(authority)) role = UserRole.AGENT;
 
                     nouveau.setRole(role);
-                    nouveau.setNom("Super Admin"); // pour toi ça passe
+                    nouveau.setNom("Super Admin");
                     nouveau.setPrenom(null);
 
                     return utilisateurRepository.save(nouveau);
