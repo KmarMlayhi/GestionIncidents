@@ -1,8 +1,10 @@
 package com.example.gestionincidents.controller;
 
-import com.example.gestionincidents.entity.UserRole;
 import com.example.gestionincidents.entity.Utilisateur;
 import com.example.gestionincidents.repository.UtilisateurRepository;
+import com.example.gestionincidents.service.CitizenDashboardService;
+import com.example.gestionincidents.service.ConnectedUserInfoService;
+import com.example.gestionincidents.DTO.CitizenDashboardDTO;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,55 +15,51 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/citoyen")
 public class CitizenController {
 
+    private final ConnectedUserInfoService connectedUserInfoService;
     private final UtilisateurRepository utilisateurRepository;
+    private final CitizenDashboardService citizenDashboardService; //
 
-    public CitizenController(UtilisateurRepository utilisateurRepository) {
+    public CitizenController(ConnectedUserInfoService connectedUserInfoService,
+                             UtilisateurRepository utilisateurRepository,
+                             CitizenDashboardService citizenDashboardService) {
+        this.connectedUserInfoService = connectedUserInfoService;
         this.utilisateurRepository = utilisateurRepository;
+        this.citizenDashboardService = citizenDashboardService;
     }
 
+    // Tableau de bord
     @GetMapping("/dashboard")
     public String citizenDashboard(Model model, Authentication authentication) {
 
-        // 1) Email de l’utilisateur connecté (username = email)
+        connectedUserInfoService.addConnectedUserInfo(model, authentication);
+
+        CitizenDashboardDTO data = citizenDashboardService.buildDashboard(authentication.getName());
+        model.addAttribute("data", data);
+
+        model.addAttribute("catLabels", data.getByCategorie().keySet().stream().toList());
+        model.addAttribute("catValues", data.getByCategorie().values().stream().toList());
+
+        model.addAttribute("monthLabels", data.getByMonth().keySet().stream().toList());
+        model.addAttribute("monthValues", data.getByMonth().values().stream().toList());
+
+        return "citizen-dashboard";
+    }
+
+    // Page profil citoyen
+    @GetMapping("/profil")
+    public String citizenProfile(Model model, Authentication authentication) {
+
+        // Infos pour la navbar (nom, initiales, rôle)
+        connectedUserInfoService.addConnectedUserInfo(model, authentication);
+
+        // Récupérer l’utilisateur connecté
         String email = authentication.getName();
+        Utilisateur citoyen = utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Utilisateur introuvable : " + email));
 
-        // 2) Charger l'utilisateur métier depuis la base
-        Utilisateur u = utilisateurRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable : " + email));
+        // Passer l’objet au template
+        model.addAttribute("citoyen", citoyen);
 
-        // 3) Construire le nom complet
-        String fullName = (u.getPrenom() != null ? u.getPrenom() + " " : "")
-                + (u.getNom() != null ? u.getNom() : "");
-
-        // 4) Construire les initiales (ex : "KM")
-        String initials = "";
-        if (u.getPrenom() != null && !u.getPrenom().isEmpty()) {
-            initials += u.getPrenom().charAt(0);
-        }
-        if (u.getNom() != null && !u.getNom().isEmpty()) {
-            initials += u.getNom().charAt(0);
-        }
-        initials = initials.toUpperCase();
-
-        // 5) Traduire le rôle enum -> label lisible
-        String roleLabel;
-        if (u.getRole() == UserRole.CITOYEN) {
-            roleLabel = "Citoyen";
-        } else if (u.getRole() == UserRole.AGENT) {
-            roleLabel = "Agent municipal";
-        } else if (u.getRole() == UserRole.ADMIN) {
-            roleLabel = "Administrateur";
-        } else if (u.getRole() == UserRole.SUPER_ADMIN) {
-            roleLabel = "Super administrateur";
-        } else {
-            roleLabel = u.getRole().name();
-        }
-
-        // 6) Passer au template Thymeleaf
-        model.addAttribute("fullName", fullName);
-        model.addAttribute("initials", initials);
-        model.addAttribute("roleLabel", roleLabel);
-
-        return "citizen-dashboard";   // => templates/citizen-dashboard.html
+        return "citizen-profile"; // => templates/citizen-profile.html
     }
 }

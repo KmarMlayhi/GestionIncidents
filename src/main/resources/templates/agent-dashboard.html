@@ -2,8 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tableau de bord agent</title>
+    <title>Tableau de bord Agent</title>
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,9 +10,55 @@
           rel="stylesheet">
 
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+
+    <style>
+        .content.content-top{ align-items:flex-start!important; justify-content:flex-start!important; }
+
+        .kpi-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-bottom:16px; }
+        .kpi-card{ background:#fff; border:1px solid var(--border-light,#e2e8f0); border-radius:12px; padding:16px; }
+        .kpi-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+        .kpi-label{ color:var(--text-gray,#64748b); font-size:13px; }
+        .kpi-value{ font-size:28px; font-weight:800; color:var(--text-dark,#1e293b); margin-top:4px; }
+
+        .section-title{
+            font-size:16px; font-weight:700; color:var(--text-dark,#1e293b);
+            margin: 10px 0 12px 0; display:flex; gap:8px; align-items:center;
+        }
+
+        .card-box{ background:#fff; border:1px solid var(--border-light,#e2e8f0); border-radius:12px; padding:16px; }
+
+        .pill{
+            display:inline-flex; align-items:center; gap:8px;
+            padding:6px 10px; border-radius:999px; font-size:12px;
+            background:rgba(37,99,235,0.08); color:var(--primary,#2563eb); font-weight:700;
+        }
+
+        table.simple{ width:100%; border-collapse:collapse; margin-top:10px; font-size:14px; }
+        table.simple th, table.simple td{ padding:10px 8px; border-top:1px solid var(--border-light,#e2e8f0); text-align:left; }
+        table.simple th{ color:var(--text-gray,#64748b); font-size:13px; font-weight:700; }
+
+        /* Badges état */
+        .badge{ display:inline-flex; align-items:center; padding:6px 10px; border-radius:999px; font-size:12px; font-weight:700; }
+        .st-new{ background:rgba(59,130,246,.12); color:#2563eb; }
+        .st-progress{ background:rgba(245,158,11,.14); color:#b45309; }
+        .st-ok{ background:rgba(16,185,129,.14); color:#047857; }
+        .st-close{ background:rgba(100,116,139,.16); color:#334155; }
+
+        /* Badges priorité */
+        .p-high{ background:rgba(239,68,68,.14); color:#b91c1c; }
+        .p-mid{ background:rgba(245,158,11,.14); color:#b45309; }
+        .p-low{ background:rgba(59,130,246,.12); color:#2563eb; }
+
+        .muted{ color:var(--text-gray,#64748b); font-size:13px; margin-top:6px; }
+        .grid-2{ display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+        @media (max-width: 900px){ .grid-2{ grid-template-columns:1fr; } }
+    </style>
 </head>
+
 <body>
 <div class="dashboard-container">
+
+    <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="sidebar-header">
             <div class="logo">
@@ -24,27 +69,21 @@
 
         <ul class="sidebar-menu">
             <li>
-                <a href="#" class="active">
+                <a th:href="@{/agent/dashboard}" class="active">
                     <span class="menu-icon"><i class="fas fa-home"></i></span>
                     <span class="menu-text">Tableau de bord</span>
                 </a>
             </li>
             <li>
-                <a href="#">
+                <a th:href="@{/agent/incidents}">
                     <span class="menu-icon"><i class="fas fa-tasks"></i></span>
-                    <span class="menu-text">Incidents assignés</span>
+                    <span class="menu-text">Incidents assignées</span>
                 </a>
             </li>
             <li>
-                <a href="#">
-                    <span class="menu-icon"><i class="fas fa-map"></i></span>
-                    <span class="menu-text">Carte des incidents</span>
-                </a>
-            </li>
-            <li>
-                <a href="#">
-                    <span class="menu-icon"><i class="fas fa-history"></i></span>
-                    <span class="menu-text">Historique</span>
+                <a th:href="@{/agent/profil}">
+                    <span class="menu-icon"><i class="fas fa-user-cog"></i></span>
+                    <span class="menu-text">Mon profil</span>
                 </a>
             </li>
         </ul>
@@ -59,7 +98,10 @@
         </div>
     </aside>
 
+    <!-- MAIN -->
     <main class="main-content">
+
+        <!-- NAVBAR -->
         <nav class="navbar">
             <div class="navbar-left">
                 <button class="menu-toggle" id="menuToggle">
@@ -69,11 +111,6 @@
             </div>
 
             <div class="navbar-right">
-                <div class="search-container">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" class="search-input" placeholder="Rechercher un incident...">
-                </div>
-
                 <div class="navbar-actions">
                     <div class="action-icon">
                         <i class="fas fa-bell"></i>
@@ -83,26 +120,170 @@
                     <div class="user-profile">
                         <div class="user-avatar" th:text="${initials}">AG</div>
                         <div class="user-info">
-                            <div class="user-name" th:text="${fullName}">Agent municipal</div>
-                            <div class="user-role" th:text="${roleLabel}">Agent municipal</div>
+                            <div class="user-name" th:text="${fullName}">Agent</div>
+                            <div class="user-role" th:text="${roleLabel}">AGENT</div>
                         </div>
-                        <i class="fas fa-chevron-down"
-                           style="font-size: 12px; color: var(--text-gray);"></i>
+                        <i class="fas fa-chevron-down" style="font-size:12px;color:var(--text-gray);"></i>
                     </div>
                 </div>
             </div>
         </nav>
 
-        <div class="content">
-            <div class="empty-state">
-                <div class="empty-icon">
-                    <i class="fas fa-clipboard-check"></i>
+        <!-- CONTENT -->
+        <div class="content content-top">
+            <div style="max-width:1100px;margin:0 auto;width:100%;">
+
+                <!-- KPIs -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-top">
+                            <div>
+                                <div class="kpi-label">Incidents assignés</div>
+                                <div class="kpi-value" th:text="${data.totalAssignes}">0</div>
+                            </div>
+                            <i class="fas fa-clipboard-check" style="font-size:22px;color:var(--primary,#2563eb)"></i>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-top">
+                            <div>
+                                <div class="kpi-label">Prise en charge</div>
+                                <div class="kpi-value" th:text="${data.priseEnCharge}">0</div>
+                            </div>
+                            <i class="fas fa-hand-holding" style="font-size:22px;color:#f59e0b"></i>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-top">
+                            <div>
+                                <div class="kpi-label">En résolution</div>
+                                <div class="kpi-value" th:text="${data.enResolution}">0</div>
+                            </div>
+                            <i class="fas fa-tools" style="font-size:22px;color:#f59e0b"></i>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-top">
+                            <div>
+                                <div class="kpi-label">Clôturés</div>
+                                <div class="kpi-value" th:text="${data.clotures}">0</div>
+                            </div>
+                            <i class="fas fa-lock" style="font-size:22px;color:#64748b"></i>
+                        </div>
+                    </div>
                 </div>
-                <h2 class="empty-title">Aucun incident à afficher</h2>
-                <p class="empty-description">
-                    Lorsque des incidents vous seront assignés,<br>
-                    ils apparaîtront ici pour traitement.
-                </p>
+
+                <div class="grid-2">
+                    <!-- Priorités -->
+                    <div class="card-box">
+                        <div class="section-title"><i class="fas fa-flag"></i> Priorités</div>
+
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <span class="pill p-high">
+                                <i class="fas fa-arrow-up"></i> Haute :
+                                <b th:text="${data.prioHaute}">0</b>
+                            </span>
+                            <span class="pill p-mid">
+                                <i class="fas fa-equals"></i> Moyenne :
+                                <b th:text="${data.prioMoyenne}">0</b>
+                            </span>
+                            <span class="pill p-low">
+                                <i class="fas fa-arrow-down"></i> Basse :
+                                <b th:text="${data.prioBasse}">0</b>
+                            </span>
+                        </div>
+
+                        <div class="muted">
+                            Astuce : la priorité vient du champ <b>priorite</b> (HAUTE/MOYENNE/BASSE) dans la table Incident.
+                        </div>
+                    </div>
+
+                    <!-- Admin responsable -->
+                    <div class="card-box">
+                        <div class="section-title"><i class="fas fa-user-shield"></i> Mon administrateur</div>
+
+                        <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
+                            <div>
+                                <div style="font-weight:800;font-size:16px;" th:text="${data.admin.nomComplet}">—</div>
+                                <div class="muted">
+                                    <i class="fas fa-envelope"></i>
+                                    <span th:text="${data.admin.email}">—</span>
+                                    &nbsp; • &nbsp;
+                                    <i class="fas fa-phone"></i>
+                                    <span th:text="${data.admin.phone}">—</span>
+                                </div>
+                            </div>
+                            <span class="pill"><i class="fas fa-info-circle"></i> Responsable</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table derniers incidents -->
+                <div class="card-box" style="margin-top:16px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+                        <div class="section-title" style="margin:0;">
+                            <i class="fas fa-list"></i> Derniers incidents assignés
+                        </div>
+                        <a th:href="@{/agent/incidents}" class="primary-btn" style="text-decoration:none;">
+                            Voir tout
+                        </a>
+                    </div>
+
+                    <table class="simple">
+                        <thead>
+                        <tr>
+                            <th>Titre</th>
+                            <th>Catégorie</th>
+                            <th>État</th>
+                            <th>Priorité</th>
+                            <th>Date</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="i : ${data.lastIncidents}">
+                            <td th:text="${i.titre}">Titre</td>
+                            <td th:text="${i.categorie}">PROPRETE</td>
+
+                            <td>
+                                <span class="badge"
+                                      th:classappend="
+                                      ${i.etat != null and i.etat.name() == 'NOUVEAU'} ? ' st-new' :
+                                      (${i.etat != null and i.etat.name() == 'PRISE_EN_CHARGE'} ? ' st-progress' :
+                                      (${i.etat != null and i.etat.name() == 'EN_RESOLUTION'} ? ' st-progress' :
+                                      (${i.etat != null and i.etat.name() == 'RESOLUE'} ? ' st-ok' :
+                                      (${i.etat != null and i.etat.name() == 'CLOTURE'} ? ' st-close' : ''))))"
+                                      th:text="${i.etat}">
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge"
+                                      th:if="${i.priorite != null}"
+                                      th:classappend="
+                                      ${i.priorite.name() == 'HAUTE'} ? ' p-high' :
+                                      (${i.priorite.name() == 'MOYENNE'} ? ' p-mid' :
+                                      (${i.priorite.name() == 'BASSE'} ? ' p-low' : '') )"
+                                      th:text="${i.priorite}">
+                                </span>
+                                <span th:if="${i.priorite == null}">—</span>
+                            </td>
+
+                            <td th:text="${i.dateCreation != null ? #temporals.format(i.dateCreation,'dd/MM/yyyy HH:mm') : '—'}">—</td>
+                        </tr>
+
+                        <tr th:if="${data.totalAssignes == 0}">
+                            <td colspan="6" class="muted" style="padding:14px;">
+                                Aucun incident assigné pour le moment.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
             </div>
         </div>
     </main>
@@ -111,20 +292,10 @@
 <script>
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.querySelector('.sidebar');
-    menuToggle.addEventListener('click', () => {
-        sidebar.classList.toggle('active');
-    });
-
-    const menuItems = document.querySelectorAll('.sidebar-menu a');
-    menuItems.forEach(item => {
-        item.addEventListener('click', (e) => {
-            e.preventDefault();
-            menuItems.forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-            const menuText = item.querySelector('.menu-text').textContent;
-            document.querySelector('.page-title').textContent = menuText;
-        });
-    });
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', () => sidebar.classList.toggle('active'));
+    }
 </script>
+
 </body>
 </html>

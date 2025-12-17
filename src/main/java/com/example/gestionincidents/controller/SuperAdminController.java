@@ -1,7 +1,6 @@
 package com.example.gestionincidents.controller;
 
 import com.example.gestionincidents.entity.Departement;
-import com.example.gestionincidents.entity.UserRole;
 import com.example.gestionincidents.entity.Utilisateur;
 import com.example.gestionincidents.repository.UtilisateurRepository;
 import com.example.gestionincidents.service.AccountService;
@@ -14,6 +13,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import com.example.gestionincidents.DTO.SuperAdminDashboardDTO;
+import com.example.gestionincidents.service.SuperAdminAnalyticsService;
+
 
 import java.util.List;
 
@@ -26,23 +28,27 @@ public class SuperAdminController {
     private final UtilisateurRepository utilisateurRepository;
     private final ConnectedUserInfoService connectedUserInfoService;
     private final UserAssignmentService userAssignmentService;
+    private final SuperAdminAnalyticsService superAdminAnalyticsService;
+
 
     public SuperAdminController(AccountService accountService,
                                 MailService mailService,
                                 ConnectedUserInfoService connectedUserInfoService,
                                 UtilisateurRepository utilisateurRepository,
-                                UserAssignmentService userAssignmentService) {
+                                UserAssignmentService userAssignmentService, SuperAdminAnalyticsService superAdminAnalyticsService) {
         this.accountService = accountService;
         this.mailService = mailService;
         this.utilisateurRepository = utilisateurRepository;
         this.connectedUserInfoService = connectedUserInfoService;
         this.userAssignmentService = userAssignmentService;
+        this.superAdminAnalyticsService = superAdminAnalyticsService;
     }
 
     // 🟦 1) Dashboard super admin (pas de formulaire ici)
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication authentication) {
-
+        SuperAdminDashboardDTO data = superAdminAnalyticsService.buildDashboard();
+        model.addAttribute("data", data);
         connectedUserInfoService.addConnectedUserInfo(model, authentication);
 
         return "superadmin-dashboard";   // templates/superadmin-dashboard.html

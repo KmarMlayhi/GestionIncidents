@@ -4,13 +4,11 @@
     <meta charset="UTF-8">
     <title>Tableau de bord citoyen</title>
 
-    <!-- FontAwesome + Google Fonts -->
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
 </head>
+
 <body>
 <div class="dashboard-container">
 
@@ -31,7 +29,6 @@
                 </a>
             </li>
 
-            <!-- Déclarer un incident -->
             <li>
                 <a th:href="@{/citoyen/incidents/nouveau}">
                     <span class="menu-icon"><i class="fas fa-plus-circle"></i></span>
@@ -39,7 +36,6 @@
                 </a>
             </li>
 
-            <!-- Mes incidents -->
             <li>
                 <a th:href="@{/citoyen/incidents}">
                     <span class="menu-icon"><i class="fas fa-list"></i></span>
@@ -47,15 +43,7 @@
                 </a>
             </li>
 
-            <!-- Carte des incidents (optionnel selon le sujet) -->
-            <li>
-                <a th:href="@{/citoyen/carte}">
-                    <span class="menu-icon"><i class="fas fa-map-marked-alt"></i></span>
-                    <span class="menu-text">Carte des incidents</span>
-                </a>
-            </li>
 
-            <!-- Profil / paramètres -->
             <li>
                 <a th:href="@{/citoyen/profil}">
                     <span class="menu-icon"><i class="fas fa-user-cog"></i></span>
@@ -63,25 +51,21 @@
                 </a>
             </li>
 
-            <!-- Notifications / messages -->
-            <li>
-                <a th:href="@{/citoyen/notifications}">
-                    <span class="menu-icon"><i class="fas fa-bell"></i></span>
-                    <span class="menu-text">Notifications</span>
-                </a>
-            </li>
         </ul>
 
         <div class="sidebar-footer">
-            <button class="logout-btn" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Déconnexion</span>
-            </button>
+            <form th:action="@{/logout}" method="post">
+                <button class="logout-btn" type="submit">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Déconnexion</span>
+                </button>
+            </form>
         </div>
     </aside>
 
     <!-- MAIN CONTENT -->
     <main class="main-content">
+
         <!-- NAVBAR -->
         <nav class="navbar">
             <div class="navbar-left">
@@ -92,98 +76,184 @@
             </div>
 
             <div class="navbar-right">
-                <div class="search-container">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" class="search-input" placeholder="Rechercher un incident...">
-                </div>
 
                 <div class="navbar-actions">
                     <div class="action-icon">
                         <i class="fas fa-bell"></i>
                         <span class="notification-badge"></span>
                     </div>
-                    <div class="action-icon">
-                        <i class="fas fa-envelope"></i>
-                    </div>
 
-                    <!-- PROFIL UTILISATEUR (dynamique) -->
                     <div class="user-profile">
-                        <!-- Initiales dynamiques (ex : "KM") -->
                         <div class="user-avatar" th:text="${initials}">CT</div>
-
                         <div class="user-info">
-                            <!-- Nom dynamique -->
                             <div class="user-name" th:text="${fullName}">Citoyen</div>
-
-                            <!-- Rôle dynamique -->
                             <div class="user-role" th:text="${roleLabel}">Citoyen</div>
                         </div>
-
-                        <i class="fas fa-chevron-down"
-                           style="font-size: 12px; color: var(--text-gray);"></i>
+                        <i class="fas fa-chevron-down" style="font-size:12px;color:var(--text-gray);"></i>
                     </div>
                 </div>
             </div>
         </nav>
 
-        <!-- CONTENU CENTRAL (placeholder pour l’instant) -->
-        <div class="content">
-            <div class="empty-state">
-                <div class="empty-icon">
-                    <i class="fas fa-street-view"></i>
+        <!-- CONTENT -->
+        <div class="content" style="align-items:flex-start; justify-content:flex-start;">
+            <div style="width:100%; max-width:1100px; margin:0 auto;">
+
+                <!-- KPIs -->
+                <div class="stats-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+                    <div class="stat-card" style="background:#fff;border:1px solid var(--border-light);border-radius:12px;padding:18px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <div style="color:var(--text-gray);font-size:13px;">Total incidents</div>
+                                <div style="font-size:30px;font-weight:800;" th:text="${data.total}">0</div>
+                            </div>
+                            <i class="fas fa-list" style="font-size:22px;color:var(--primary)"></i>
+                        </div>
+                    </div>
+
+                    <div class="stat-card" style="background:#fff;border:1px solid var(--border-light);border-radius:12px;padding:18px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <div style="color:var(--text-gray);font-size:13px;">En cours</div>
+                                <div style="font-size:30px;font-weight:800;" th:text="${data.enCours}">0</div>
+                            </div>
+                            <i class="fas fa-spinner" style="font-size:22px;color:#f59e0b"></i>
+                        </div>
+                    </div>
+
+                    <div class="stat-card" style="background:#fff;border:1px solid var(--border-light);border-radius:12px;padding:18px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <div style="color:var(--text-gray);font-size:13px;">Résolus</div>
+                                <div style="font-size:30px;font-weight:800;" th:text="${data.resolus}">0</div>
+                            </div>
+                            <i class="fas fa-check-circle" style="font-size:22px;color:#10b981"></i>
+                        </div>
+                    </div>
+
+                    <div class="stat-card" style="background:#fff;border:1px solid var(--border-light);border-radius:12px;padding:18px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <div style="color:var(--text-gray);font-size:13px;">Clôturés</div>
+                                <div style="font-size:30px;font-weight:800;" th:text="${data.clotures}">0</div>
+                            </div>
+                            <i class="fas fa-lock" style="font-size:22px;color:#3b82f6"></i>
+                        </div>
+                    </div>
                 </div>
-                <h2 class="empty-title">Bienvenue sur votre espace citoyen</h2>
-                <p class="empty-description">
-                    À partir d’ici, vous pourrez :
-                    <br>• Déclarer un incident dans votre quartier
-                    <br>• Suivre l’état de vos signalements
-                    <br>• Consulter l’historique de vos déclarations
-                </p>
+
+                <!-- Graphes -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+                    <div class="card" style="background:#fff;border:1px solid var(--border-light);border-radius:12px;padding:16px;">
+                        <h3 style="margin:0 0 10px 0;font-size:16px;">
+                            <i class="fas fa-chart-pie"></i> Par catégorie
+                        </h3>
+                        <canvas id="catChart" height="160"></canvas>
+                    </div>
+
+                    <div class="card" style="background:#fff;border:1px solid var(--border-light);border-radius:12px;padding:16px;">
+                        <h3 style="margin:0 0 10px 0;font-size:16px;">
+                            <i class="fas fa-chart-column"></i> Incidents / mois
+                        </h3>
+                        <canvas id="monthChart" height="160"></canvas>
+                    </div>
+                </div>
+
+                <!-- Derniers incidents -->
+                <div class="card" style="background:#fff;border:1px solid var(--border-light);border-radius:12px;padding:16px;margin-top:16px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <h3 style="margin:0;font-size:16px;">
+                            <i class="fas fa-clock"></i> Derniers incidents
+                        </h3>
+                        <a th:href="@{/citoyen/incidents}" class="logout-btn" style="width:auto; text-decoration:none;">
+                            Voir tout
+                        </a>
+                    </div>
+
+                    <div style="margin-top:12px;">
+                        <table style="width:100%;border-collapse:collapse;">
+                            <thead>
+                            <tr style="text-align:left;color:var(--text-gray);font-size:13px;">
+                                <th>Titre</th>
+                                <th>Catégorie</th>
+                                <th>État</th>
+                                <th>Date</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="i : ${data.lastIncidents}">
+                                <td th:text="${i.titre}">Titre</td>
+                                <td th:text="${i.categorie}">PROPRETE</td>
+                                <td th:text="${i.etat}">NOUVEAU</td>
+                                <td th:text="${i.dateCreation != null ? #temporals.format(i.dateCreation,'dd/MM/yyyy HH:mm') : '-'}">-</td>
+                            </tr>
+
+                            <tr th:if="${data.total == 0}">
+                                <td colspan="5" style="padding:16px;color:var(--text-gray);">
+                                    Aucun incident pour le moment. Déclarez votre premier incident.
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- délai moyen -->
+                <div style="margin-top:12px;color:var(--text-gray);font-size:13px;">
+                    Délai moyen de clôture :
+                    <b th:text="${#numbers.formatDecimal(data.delaiMoyenJours,1,1)}">0.0</b> jours
+                    (calculé sur les incidents clôturés).
+                </div>
+
             </div>
         </div>
     </main>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const catLabels = /*[[${catLabels}]]*/ [];
+    const catValues = /*[[${catValues}]]*/ [];
+
+    const monthLabels = /*[[${monthLabels}]]*/ [];
+    const monthValues = /*[[${monthValues}]]*/ [];
+
+    const catCanvas = document.getElementById('catChart');
+    if (catCanvas) {
+        new Chart(catCanvas, {
+            type: 'doughnut',
+            data: { labels: catLabels, datasets: [{ data: catValues }] }
+        });
+    }
+
+    const monthCanvas = document.getElementById('monthChart');
+    if (monthCanvas) {
+        new Chart(monthCanvas, {
+            type: 'bar',
+            data: {
+                labels: monthLabels,
+                datasets: [{
+                    label: "Nbr incidents / mois",
+                    data: monthValues
+                }]
+            }
+        });
+
+    }
+    /*]]>*/
+</script>
+
 <script>
-    // Toggle sidebar on mobile
+    // Toggle sidebar (mobile)
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.querySelector('.sidebar');
 
-    if (menuToggle) {
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-        });
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', () => sidebar.classList.toggle('active'));
     }
-
-    // Logout button -> vraie déconnexion Spring Security
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            window.location.href = '/logout';
-        });
-    }
-
-    // Active menu item selection
-    const menuItems = document.querySelectorAll('.sidebar-menu a');
-    menuItems.forEach(item => {
-        item.addEventListener('click', (e) => {
-            // e.preventDefault();   // à enlever plus tard quand les liens existent
-            menuItems.forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-
-            if (window.innerWidth <= 1024) {
-                sidebar.classList.remove('active');
-            }
-        });
-    });
-
-    // Update page title based on active menu item
-    menuItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const menuText = item.querySelector('.menu-text').textContent;
-            document.querySelector('.page-title').textContent = menuText;
-        });
-    });
 </script>
+
 </body>
 </html>

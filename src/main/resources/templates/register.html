@@ -2,40 +2,342 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Inscription citoyen</title>
-</head>
-<body>
-<h2>Créer un compte citoyen</h2>
+    <title>Inscription citoyen - Plateforme de gestion d'incidents</title>
 
-<!-- Message d'erreur si l'email est déjà utilisé, etc. -->
-<div th:if="${error}">
-    <p th:text="${error}" style="color:red;"></p>
+    <!-- Icons & fonts -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
+    <link rel="stylesheet" th:href="@{/css/register.css}">
+</head>
+
+<body>
+<div class="login-container register-container">
+    <div class="register-card">
+        <!-- Section gauche : Formulaire -->
+        <div class="register-left">
+            <div class="register-header">
+                <div class="register-logo">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h1 class="register-title">Inscription citoyen</h1>
+                <p class="register-subtitle">
+                    Créez votre compte pour signaler des incidents et contribuer à améliorer votre ville
+                </p>
+            </div>
+
+            <!-- Message d'erreur -->
+            <div th:if="${error}" class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <div>
+                    <strong>Erreur d'inscription</strong>
+                    <div style="margin-top: 4px; font-size: 13px;" th:text="${error}"></div>
+                </div>
+            </div>
+
+            <form th:action="@{/register}" th:object="${form}" method="post" class="register-form" id="registerForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="nom">
+                            <i class="fas fa-user" style="margin-right: 6px;"></i>
+                            Nom
+                        </label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-id-card"></i>
+                            <input type="text"
+                                   id="nom"
+                                   th:field="*{nom}"
+                                   class="form-control"
+                                   placeholder="Dupont"
+                                   required
+                                   autocomplete="family-name">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prenom">
+                            <i class="fas fa-user" style="margin-right: 6px;"></i>
+                            Prénom
+                        </label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-id-card"></i>
+                            <input type="text"
+                                   id="prenom"
+                                   th:field="*{prenom}"
+                                   class="form-control"
+                                   placeholder="Jean"
+                                   required
+                                   autocomplete="given-name">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">
+                        <i class="fas fa-envelope" style="margin-right: 6px;"></i>
+                        Adresse email
+                    </label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email"
+                               id="email"
+                               th:field="*{email}"
+                               class="form-control"
+                               placeholder="jean.dupont@email.fr"
+                               required
+                               autocomplete="email">
+                    </div>
+                    <div class="form-note">Utilisez une adresse email valide pour recevoir les mises à jour</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">
+                        <i class="fas fa-phone" style="margin-right: 6px;"></i>
+                        Numéro de téléphone
+                    </label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                        <input type="tel"
+                               id="phone"
+                               th:field="*{phone}"
+                               class="form-control"
+                               placeholder="XX XXX XXX"
+                               required
+                               autocomplete="tel"
+                               maxlength="12">
+                    </div>
+                    <div class="phone-format">
+                        <i class="fas fa-info-circle"></i>
+                        Format tunisien : XX XXX XXX (ex: 25 123 456)
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-key" style="margin-right: 6px;"></i>
+                        Mot de passe
+                    </label>
+                    <div class="input-with-icon password-field">
+                        <i class="fas fa-lock"></i>
+                        <input type="password"
+                               id="password"
+                               th:field="*{password}"
+                               class="form-control"
+                               placeholder="••••••••"
+                               required
+                               autocomplete="new-password">
+                        <button type="button" class="password-toggle" id="togglePassword" aria-label="Afficher le mot de passe">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <!-- Indicateurs de force du mot de passe -->
+                    <div class="password-requirements" id="passwordRequirements">
+                        <div class="requirement invalid" id="reqLength">
+                            <i class="fas fa-circle"></i>
+                            <span>Au moins 8 caractères</span>
+                        </div>
+                        <div class="requirement invalid" id="reqNumber">
+                            <i class="fas fa-circle"></i>
+                            <span>Au moins un chiffre</span>
+                        </div>
+                        <div class="requirement invalid" id="reqSpecial">
+                            <i class="fas fa-circle"></i>
+                            <span>Au moins un caractère spécial</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="terms-group">
+                    <label class="terms-checkbox">
+                        <input type="checkbox" id="terms" name="terms" required>
+                        <div class="terms-text">
+                            J'accepte les <a href="/conditions" target="_blank">conditions d'utilisation</a>
+                            et la <a href="/confidentialite" target="_blank">politique de confidentialité</a>.
+                            Je certifie être un citoyen résidant dans cette ville.
+                        </div>
+                    </label>
+                </div>
+
+                <button type="submit" class="register-button" id="submitBtn" disabled>
+                    <span>Créer mon compte citoyen</span>
+                    <div class="loading" id="loadingSpinner"></div>
+                </button>
+
+                <div class="register-footer">
+                    <p class="login-link">
+                        Vous avez déjà un compte ?
+                        <a th:href="@{/login}">Se connecter</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Section droite : Avantages -->
+        <div class="register-right">
+            <div class="benefits-section">
+                <h3 class="benefits-title">
+                    <i class="fas fa-star"></i>
+                    Pourquoi s'inscrire ?
+                </h3>
+
+                <ul class="benefits-list">
+                    <li>
+                        <i class="fas fa-bullhorn"></i>
+                        <div>
+                            <strong>Signalement en direct</strong>
+                            <div class="benefits-description">
+                                Signalez des incidents (déchets, éclairage, voirie) en quelques clics avec photos
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-chart-line"></i>
+                        <div>
+                            <strong>Suivi en temps réel</strong>
+                            <div class="benefits-description">
+                                Consultez l'état d'avancement de vos signalements et recevez des notifications
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-comments"></i>
+                        <div>
+                            <strong>Communication directe</strong>
+                            <div class="benefits-description">
+                                Échangez avec les services municipaux sur la résolution de vos signalements
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-users"></i>
+                        <div>
+                            <strong>Communauté active</strong>
+                            <div class="benefits-description">
+                                Rejoignez des milliers de citoyens engagés pour une ville plus propre et plus sûre
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-shield-alt"></i>
+                        <div>
+                            <strong>Données sécurisées</strong>
+                            <div class="benefits-description">
+                                Vos informations personnelles sont protégées et ne sont jamais partagées
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
 
-<form th:action="@{/register}" th:object="${form}" method="post">
-    <label>Nom :</label>
-    <input type="text" th:field="*{nom}" required>
-    <br>
+<script>
+    // Fonction pour afficher/masquer le mot de passe
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const passwordInput = document.getElementById('password');
+        const icon = this.querySelector('i');
 
-    <label>Prénom :</label>
-    <input type="text" th:field="*{prenom}" required>
-    <br>
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+            this.setAttribute('aria-label', 'Masquer le mot de passe');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+            this.setAttribute('aria-label', 'Afficher le mot de passe');
+        }
 
-    <label>Email :</label>
-    <input type="email" th:field="*{email}" required>
-    <br>
+        passwordInput.focus();
+    });
 
-    <label>Télèphone :</label>
-    <input type="text" th:field="*{phone}" required>
-    <br>
+    // Validation du mot de passe en temps réel
+    const passwordInput = document.getElementById('password');
+    const submitBtn = document.getElementById('submitBtn');
+    const termsCheckbox = document.getElementById('terms');
 
-    <label>Mot de passe :</label>
-    <input type="password" th:field="*{password}" required>
-    <br><br>
+    function validatePassword(password) {
+        const hasMinLength = password.length >= 8;
+        const hasNumber = /\d/.test(password);
+        const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
-    <button type="submit">S'inscrire</button>
-</form>
+        // Mettre à jour les indicateurs visuels
+        updateRequirement('reqLength', hasMinLength);
+        updateRequirement('reqNumber', hasNumber);
+        updateRequirement('reqSpecial', hasSpecial);
 
-<a th:href="@{/login}">Déjà un compte ? Se connecter</a>
+        return hasMinLength && hasNumber && hasSpecial;
+    }
+
+    function updateRequirement(elementId, isValid) {
+        const element = document.getElementById(elementId);
+        if (isValid) {
+            element.classList.remove('invalid');
+            element.classList.add('valid');
+            element.querySelector('i').className = 'fas fa-check-circle';
+        } else {
+            element.classList.remove('valid');
+            element.classList.add('invalid');
+            element.querySelector('i').className = 'fas fa-circle';
+        }
+    }
+
+    function validateForm() {
+        const isPasswordValid = validatePassword(passwordInput.value);
+        const isTermsAccepted = termsCheckbox.checked;
+
+        submitBtn.disabled = !(isPasswordValid && isTermsAccepted);
+    }
+
+    passwordInput.addEventListener('input', function() {
+        validatePassword(this.value);
+        validateForm();
+    });
+
+    termsCheckbox.addEventListener('change', validateForm);
+
+    // Validation initiale
+    validateForm();
+
+    // Formatage automatique du téléphone tunisien (XX XXX XXX)
+    document.getElementById('phone').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+
+        // Limiter à 8 chiffres (format tunisien standard)
+        value = value.substring(0, 8);
+
+        // Appliquer le format XX XXX XXX
+        if (value.length > 2) {
+            value = value.substring(0, 2) + ' ' + value.substring(2);
+        }
+        if (value.length > 6) {
+            value = value.substring(0, 6) + ' ' + value.substring(6);
+        }
+
+        e.target.value = value.trim();
+    });
+
+    // Animation de chargement lors de la soumission
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const btnText = submitBtn.querySelector('span');
+
+        // Désactiver le bouton pendant le chargement
+        submitBtn.disabled = true;
+        btnText.textContent = 'Création en cours...';
+        loadingSpinner.style.display = 'block';
+    });
+
+    // Focus automatique sur le premier champ
+    document.getElementById('nom').focus();
+</script>
+
 </body>
 </html>

@@ -24,6 +24,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/login", "/register", "/verify").permitAll()
@@ -44,11 +45,12 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
-                        .permitAll()
+                        .logoutUrl("/logout")                // URL appelée pour se déconnecter
+                        .logoutSuccessUrl("/login?logout")   // où rediriger après déconnexion
+                        .invalidateHttpSession(true)         // détruit la session
+                        .clearAuthentication(true)           // nettoie le contexte de sécurité
+                        .deleteCookies("JSESSIONID")         // supprime le cookie de session
                 );
-
         return http.build();
     }
 

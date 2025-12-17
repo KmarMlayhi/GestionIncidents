@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Déclarer un incident</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+
+    <!-- Leaflet (carte) -->
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            crossorigin=""></script>
+
+    <style>
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-title-main {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .page-title-main i {
+            color: var(--primary);
+        }
+
+        .page-subtitle {
+            color: var(--text-gray);
+            font-size: 14px;
+            line-height: 1.5;
+            max-width: 700px;
+        }
+
+        .card {
+            background: var(--bg-white);
+            border-radius: 12px;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: var(--text-dark);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-hint {
+            display: block;
+            margin-top: 4px;
+            font-size: 12px;
+            color: var(--text-gray);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 18px;
+        }
+
+        .primary-btn {
+            background:#2563eb;
+            color:white;
+            border:none;
+            border-radius:8px;
+            padding:10px 18px;
+            font-size:14px;
+            font-weight:500;
+            cursor:pointer;
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+
+        #map {
+            width: 100%;
+            height: 280px;
+            border-radius: 10px;
+            margin-top: 6px;
+        }
+
+        .alert-success,
+        .alert-error {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+
+        .alert-success {
+            background:#ecfdf3;
+            border:1px solid #22c55e;
+            color:#166534;
+        }
+
+        .alert-error {
+            background:#fef2f2;
+            border:1px solid #ef4444;
+            color:#b91c1c;
+        }
+
+        /* Pour que le contenu ne soit pas centré verticalement */
+        .content {
+            padding: 32px;
+            align-items: flex-start;
+            justify-content: flex-start;
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+
+    <!-- SIDEBAR (copié de ton dashboard citoyen) -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-city"></i>
+            </div>
+            <div class="app-name"th:href="@{/citoyen/dashboard}">Espace citoyen</div>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li>
+                <a th:href="@{/citoyen/dashboard}">
+                    <span class="menu-icon"><i class="fas fa-home"></i></span>
+                    <span class="menu-text">Tableau de bord</span>
+                </a>
+            </li>
+
+            <li>
+                <a th:href="@{/citoyen/incidents/nouveau}" class="active">
+                    <span class="menu-icon"><i class="fas fa-plus-circle"></i></span>
+                    <span class="menu-text">Déclarer un incident</span>
+                </a>
+            </li>
+
+            <li>
+                <a th:href="@{/citoyen/incidents}">
+                    <span class="menu-icon"><i class="fas fa-list"></i></span>
+                    <span class="menu-text">Mes incidents</span>
+                </a>
+            </li>
+
+
+
+            <li>
+                <a th:href="@{/citoyen/profil}">
+                    <span class="menu-icon"><i class="fas fa-user-cog"></i></span>
+                    <span class="menu-text">Mon profil</span>
+                </a>
+            </li>
+
+        </ul>
+
+        <div class="sidebar-footer">
+            <form th:action="@{/logout}" method="post">
+                <button class="logout-btn" type="submit">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Déconnexion</span>
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- NAVBAR -->
+        <nav class="navbar">
+            <div class="navbar-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="page-title">Déclarer un incident</div>
+            </div>
+
+            <div class="navbar-right">
+                <div class="navbar-actions">
+                    <div class="action-icon">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge"></span>
+                    </div>
+
+                    <div class="user-profile">
+                        <div class="user-avatar" th:text="${initials}">CT</div>
+                        <div class="user-info">
+                            <div class="user-name" th:text="${fullName}">Citoyen</div>
+                            <div class="user-role" th:text="${roleLabel}">Citoyen</div>
+                        </div>
+                        <i class="fas fa-chevron-down"
+                           style="font-size: 12px; color: var(--text-gray);"></i>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- CONTENU -->
+        <div class="content">
+            <div style="width:100%; max-width:780px; margin:0 auto;">
+
+                <!-- Messages -->
+                <div th:if="${successMessage}" class="alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span th:text="${successMessage}"></span>
+                </div>
+                <div th:if="${errorMessage}" class="alert-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span th:text="${errorMessage}"></span>
+                </div>
+
+                <!-- En-tête -->
+                <div class="page-header">
+                    <h2 class="page-title-main">
+                        <i class="fas fa-plus-circle"></i>
+                        Déclarer un nouvel incident
+                    </h2>
+                    <p class="page-subtitle">
+                        Décrivez l’incident, ajoutez des photos et indiquez sa position sur la carte.
+                        Ces informations aideront les services municipaux à traiter votre demande plus rapidement.
+                    </p>
+                </div>
+
+                <!-- Carte / formulaire -->
+                <div class="card">
+                    <div class="card-body">
+                        <form th:action="@{/citoyen/incidents}"
+                              th:object="${incidentForm}"
+                              method="post"
+                              enctype="multipart/form-data">
+
+                            <div class="form-group">
+                                <label>Titre de l’incident</label>
+                                <input type="text" th:field="*{titre}" required
+                                       placeholder="Ex : Lampadaire cassé dans la rue principale">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea th:field="*{description}" required
+                                          placeholder="Expliquez ce qui se passe, depuis quand, etc."></textarea>
+                            </div>
+
+                            <div style="display:flex; gap:16px; flex-wrap:wrap;">
+                                <div class="form-group" style="flex:1; min-width:200px;">
+                                    <label>Catégorie</label>
+                                    <select th:field="*{categorie}" required>
+                                        <option value="" disabled selected>-- Choisir une catégorie --</option>
+                                        <option th:each="cat : ${categories}"
+                                                th:value="${cat}"
+                                                th:text="${cat}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Quartier</label>
+                                <input type="text"
+                                       th:field="*{quartierNom}"
+                                       required
+                                       placeholder="Ex : El Manar, Lafayette, Centre-ville">
+                                <small class="form-hint">
+                                    Merci d’écrire le nom du quartier correctement.
+                                </small>
+                            </div>
+                            <div class="form-group">
+                                <label>Adresse ou lieu (optionnel)</label>
+                                <input type="text" th:field="*{adresse}"
+                                       placeholder="Ex : Rue Habib Bourguiba, près du café XYZ">
+                                <small class="form-hint">
+                                    Vous pouvez donner une adresse approximative en plus de la position sur la carte.
+                                </small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Position sur la carte</label>
+                                <div id="map"></div>
+                                <input type="hidden" th:field="*{latitude}" id="lat">
+                                <input type="hidden" th:field="*{longitude}" id="lng">
+                                <small class="form-hint">
+                                    Cliquez sur la carte pour placer un marqueur. Les coordonnées seront enregistrées automatiquement.
+                                </small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Photos de l’incident</label>
+                                <input type="file" id="photos" name="photos" multiple accept="image/*">
+                                <small class="form-hint">
+                                    Vous pouvez ajouter une ou plusieurs photos (format JPG, PNG…).
+                                </small>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="primary-btn">
+                                    <i class="fas fa-paper-plane"></i>
+                                    Envoyer le signalement
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // Sidebar
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.querySelector('.sidebar');
+    if (menuToggle) {
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+    }
+
+    // Leaflet : carte simple
+    document.addEventListener('DOMContentLoaded', function () {
+        const map = L.map('map').setView([36.8, 10.18], 12); // centre sur Tunis (exemple)
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+
+        let marker = null;
+        const latInput = document.getElementById('lat');
+        const lngInput = document.getElementById('lng');
+
+        map.on('click', function (e) {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+
+            latInput.value = lat;
+            lngInput.value = lng;
+
+            if (marker) {
+                marker.setLatLng(e.latlng);
+            } else {
+                marker = L.marker(e.latlng).addTo(map);
+            }
+        });
+    });
+</script>
+</body>
+</html>

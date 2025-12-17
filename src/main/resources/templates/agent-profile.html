@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mon profil - Agent</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+
+    <style>
+        .content{align-items:flex-start;justify-content:flex-start;padding:32px}
+        .profile-container{width:100%;max-width:800px;margin:0 auto}
+        .page-header{margin-bottom:24px}
+        .page-title-main{font-size:24px;font-weight:700;color:var(--text-dark);margin-bottom:6px;display:flex;align-items:center;gap:10px}
+        .page-title-main i{color:var(--primary)}
+        .page-subtitle{font-size:14px;color:var(--text-gray)}
+        .card{background:var(--bg-white);border-radius:12px;border:1px solid var(--border-light);box-shadow:0 10px 30px rgba(15,23,42,.06);padding:24px 24px 20px}
+        .profile-header{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+        .profile-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:20px}
+        .profile-name{font-size:18px;font-weight:600;color:var(--text-dark)}
+        .profile-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:10px}
+        .field-label{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-gray);margin-bottom:4px}
+        .field-value{font-size:14px;font-weight:500;color:var(--text-dark)}
+        .badge-role{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;background-color:#eff6ff;color:#1d4ed8;margin-top:6px}
+        .divider{margin:18px 0;border:0;border-top:1px solid var(--border-light)}
+        @media (max-width:768px){.content{padding:24px 16px}.page-title-main{font-size:20px}}
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+
+    <!-- SIDEBAR AGENT -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo"><i class="fas fa-map-marker-alt"></i></div>
+            <div class="app-name">AgentPanel</div>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li>
+                <a th:href="@{/agent/dashboard}">
+                    <span class="menu-icon"><i class="fas fa-home"></i></span>
+                    <span class="menu-text">Tableau de bord</span>
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/agent/incidents}">
+                    <span class="menu-icon"><i class="fas fa-tasks"></i></span>
+                    <span class="menu-text">Incidents assignés</span>
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/agent/profil}" class="active">
+                    <span class="menu-icon"><i class="fas fa-user-cog"></i></span>
+                    <span class="menu-text">Mon profil</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <form th:action="@{/logout}" method="post">
+                <button class="logout-btn" type="submit">
+                    <i class="fas fa-sign-out-alt"></i><span>Déconnexion</span>
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <nav class="navbar">
+            <div class="navbar-left">
+                <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+                <div class="page-title">Mon profil</div>
+            </div>
+            <div class="navbar-right">
+                <div class="navbar-actions">
+                    <div class="action-icon"><i class="fas fa-bell"></i><span class="notification-badge"></span></div>
+                    <div class="user-profile">
+                        <div class="user-avatar" th:text="${initials}">AG</div>
+                        <div class="user-info">
+                            <div class="user-name" th:text="${fullName}">Agent</div>
+                            <div class="user-role" th:text="${roleLabel}">Agent municipal</div>
+                        </div>
+                        <i class="fas fa-chevron-down" style="font-size:12px;color:var(--text-gray);"></i>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="content">
+            <div class="profile-container">
+
+                <div class="page-header">
+                    <h2 class="page-title-main"><i class="fas fa-user-circle"></i> Mon profil</h2>
+                    <p class="page-subtitle">Consultez les informations associées à votre compte agent.</p>
+                </div>
+
+                <div class="card">
+                    <div class="profile-header">
+                        <div class="profile-avatar"
+                             th:text="${#strings.substring(user.prenom,0,1) + #strings.substring(user.nom,0,1)}">AG</div>
+                        <div>
+                            <div class="profile-name" th:text="${user.prenom + ' ' + user.nom}">Nom Prénom</div>
+                            <div class="badge-role">
+                                <i class="fas fa-id-card"></i><span th:text="${roleLabel}">Agent municipal</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-grid">
+                        <div>
+                            <div class="field-label">Email</div>
+                            <div class="field-value" th:text="${user.email}">email@example.com</div>
+                        </div>
+
+                        <div>
+                            <div class="field-label">Téléphone</div>
+                            <div class="field-value" th:text="${user.phone != null ? user.phone : 'Non renseigné'}">Non renseigné</div>
+                        </div>
+
+                        <div>
+                            <div class="field-label">Département</div>
+                            <div class="field-value" th:text="${user.departement != null ? user.departement : '—'}">—</div>
+                        </div>
+
+                        <div>
+                            <div class="field-label">Rôle</div>
+                            <div class="field-value" th:text="${user.role}">AGENT</div>
+                        </div>
+                    </div>
+
+                    <hr class="divider">
+
+                    <h3 style="margin:0 0 10px;font-size:16px;color:var(--text-dark);display:flex;align-items:center;gap:8px;">
+                        <i class="fas fa-user-shield" style="color:var(--primary);"></i> Mon administrateur
+                    </h3>
+
+                    <div th:if="${admin != null}" class="profile-grid" style="margin-top:0;">
+                        <div>
+                            <div class="field-label">Nom</div>
+                            <div class="field-value" th:text="${admin.prenom + ' ' + admin.nom}">—</div>
+                        </div>
+                        <div>
+                            <div class="field-label">Email</div>
+                            <div class="field-value" th:text="${admin.email}">—</div>
+                        </div>
+                        <div>
+                            <div class="field-label">Téléphone</div>
+                            <div class="field-value" th:text="${admin.phone != null ? admin.phone : 'Non renseigné'}">—</div>
+                        </div>
+                        <div>
+                            <div class="field-label">Département</div>
+                            <div class="field-value" th:text="${admin.departement != null ? admin.departement : '—'}">—</div>
+                        </div>
+                    </div>
+
+                    <div th:if="${admin == null}" style="color:var(--text-gray);">
+                        Aucun administrateur assigné.
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.querySelector('.sidebar');
+    if (menuToggle) menuToggle.addEventListener('click', () => sidebar.classList.toggle('active'));
+</script>
+</body>
+</html>

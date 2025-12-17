@@ -4,81 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de bord admin</title>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
 </head>
+
 <body>
 <div class="dashboard-container">
+
+    <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="logo">
-                <i class="fas fa-shield-alt"></i>
-            </div>
+            <div class="logo"><i class="fas fa-shield-alt"></i></div>
             <div class="app-name">AdminPanel</div>
         </div>
 
         <ul class="sidebar-menu">
             <li>
-                <a href="#" class="active">
+                <a th:href="@{/admin}" class="active">
                     <span class="menu-icon"><i class="fas fa-home"></i></span>
                     <span class="menu-text">Tableau de bord</span>
                 </a>
             </li>
+
             <li>
-                <a href="#">
+                <a th:href="@{/admin/incidents}">
                     <span class="menu-icon"><i class="fas fa-tasks"></i></span>
                     <span class="menu-text">Incidents</span>
                 </a>
             </li>
             <li>
-                <a href="#">
-                    <span class="menu-icon"><i class="fas fa-users"></i></span>
-                    <span class="menu-text">Utilisateurs</span>
-                </a>
-            </li>
-            <li>
-                <a href="#">
-                    <span class="menu-icon"><i class="fas fa-chart-line"></i></span>
-                    <span class="menu-text">Analytique</span>
-                </a>
-            </li>
-            <li>
-                <a href="#">
-                    <span class="menu-icon"><i class="fas fa-cog"></i></span>
-                    <span class="menu-text">Paramètres</span>
-                </a>
-            </li>
-            <li>
-                <a href="#">
-                    <span class="menu-icon"><i class="fas fa-file-alt"></i></span>
-                    <span class="menu-text">Rapports</span>
-                </a>
-            </li>
-            <li>
-                <a href="#">
-                    <span class="menu-icon"><i class="fas fa-bell"></i></span>
-                    <span class="menu-text">Notifications</span>
+                <a th:href="@{/admin/profil}">
+                    <span class="menu-icon"><i class="fas fa-user-cog"></i></span>
+                    <span class="menu-text">Mon profil</span>
                 </a>
             </li>
         </ul>
 
         <div class="sidebar-footer">
-            <button class="logout-btn" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Déconnexion</span>
-            </button>
+            <form th:action="@{/logout}" method="post">
+                <button class="logout-btn" type="submit">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Déconnexion</span>
+                </button>
+            </form>
         </div>
     </aside>
 
-    <!-- Main Content -->
+    <!-- MAIN -->
     <main class="main-content">
-        <!-- Navbar Minimaliste -->
+
+        <!-- NAVBAR -->
         <nav class="navbar">
             <div class="navbar-left">
-                <button class="menu-toggle" id="menuToggle">
-                    <i class="fas fa-bars"></i>
-                </button>
+                <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
                 <div class="page-title">Tableau de bord</div>
             </div>
 
@@ -93,96 +73,211 @@
                         <i class="fas fa-bell"></i>
                         <span class="notification-badge"></span>
                     </div>
-                    <div class="action-icon">
-                        <i class="fas fa-envelope"></i>
-                    </div>
+                    <div class="action-icon"><i class="fas fa-envelope"></i></div>
 
                     <div class="user-profile">
-                        <!-- Initiales dynamiques (ex : "AM" pour Admin Machin) -->
                         <div class="user-avatar" th:text="${initials}">AD</div>
-
                         <div class="user-info">
-                            <!-- Nom dynamique -->
                             <div class="user-name" th:text="${fullName}">Administrateur</div>
-
-                            <!-- Rôle dynamique -->
                             <div class="user-role" th:text="${roleLabel}">Super Admin</div>
                         </div>
-
-                        <i class="fas fa-chevron-down" style="font-size: 12px; color: var(--text-gray);"></i>
+                        <i class="fas fa-chevron-down" style="font-size:12px;"></i>
                     </div>
-
                 </div>
             </div>
         </nav>
 
-        <!-- Zone de contenu vide (comme demandé) -->
-        <div class="content">
-            <div class="empty-state">
-                <div class="empty-icon">
-                    <i class="fas fa-inbox"></i>
+        <!-- CONTENT -->
+        <div class="content" style="display:block;align-items:unset;justify-content:unset;">
+            <div style="max-width:1200px;margin:0 auto;width:100%;">
+
+                <!-- KPIs -->
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+                    <div class="card" style="background:#fff;border:1px solid var(--border-light);border-radius:12px;padding:16px;">
+                        <div style="color:var(--text-gray);font-size:13px;">Total</div>
+                        <div style="font-size:30px;font-weight:800;" th:text="${data.total}">0</div>
+                    </div>
+
+                    <div class="card" style="background:#fff;border:1px solid var(--border-light);border-radius:12px;padding:16px;">
+                        <div style="color:var(--text-gray);font-size:13px;">En résolution</div>
+                        <div style="font-size:30px;font-weight:800;" th:text="${data.enResolution}">0</div>
+                    </div>
+
+                    <div class="card" style="background:#fff;border:1px solid var(--border-light);border-radius:12px;padding:16px;">
+                        <div style="color:var(--text-gray);font-size:13px;">Résolues</div>
+                        <div style="font-size:30px;font-weight:800;" th:text="${data.resolues}">0</div>
+                    </div>
+
+                    <div class="card" style="background:#fff;border:1px solid var(--border-light);border-radius:12px;padding:16px;">
+                        <div style="color:var(--text-gray);font-size:13px;">Clôturées</div>
+                        <div style="font-size:30px;font-weight:800;" th:text="${data.clotures}">0</div>
+                    </div>
                 </div>
-                <h2 class="empty-title">Aucun contenu</h2>
-                <p class="empty-description">
-                    Cette page est intentionnellement vide.
-                    Le focus est sur le design minimaliste de la sidebar et de la navbar.
-                </p>
+
+                <!-- EXPORT -->
+                <div style="display:flex;gap:10px;align-items:center;margin-top:14px;">
+                    <a th:href="@{/admin/rapports/pdf}" class="logout-btn" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;">
+                        <i class="fas fa-file-pdf"></i> Générer rapport PDF
+                    </a>
+                </div>
+
+                <!-- CHARTS -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+                    <div style="background:#fff;border:1px solid var(--border-light);border-radius:12px;padding:16px;">
+                        <h3 style="margin:0 0 10px 0;font-size:16px;">
+                            <i class="fas fa-chart-bar"></i> Incidents par quartier
+                        </h3>
+                        <canvas id="quartierChart" height="160"></canvas>
+                    </div>
+
+                    <div style="background:#fff;border:1px solid var(--border-light);border-radius:12px;padding:16px;">
+                        <h3 style="margin:0 0 10px 0;font-size:16px;">
+                            <i class="fas fa-chart-line"></i> Incidents / mois (12 derniers mois)
+                        </h3>
+                        <canvas id="monthChart" height="160"></canvas>
+                    </div>
+                </div>
+
+                <!-- TABLE AGENTS -->
+                <div class="card" style="background:#fff;border:1px solid var(--border-light);border-radius:12px;padding:16px;margin-top:16px;">
+                    <h3 style="margin:0 0 12px 0;font-size:16px;">
+                        <i class="fas fa-users"></i> Mes agents
+                    </h3>
+
+                    <table style="width:100%;border-collapse:collapse;">
+                        <thead>
+                        <tr style="text-align:left;color:var(--text-gray);font-size:13px;">
+                            <th>Nom</th>
+                            <th>Email</th>
+                            <th>Téléphone</th>
+                            <th>Nb incidents</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="agent : ${agentsList}">
+                            <td th:text="|${agent.prenom} ${agent.nom}|">Agent</td>
+                            <td th:text="${agent.email}">agent@email.com</td>
+                            <!-- ⚠️ remplace agent.telephone par TON vrai champ -->
+                            <td th:text="${agent.phone != null ? agent.phone : '—'}">—</td>
+                            <td th:text="${agentIncidentCounts[agent.id] != null ? agentIncidentCounts[agent.id] : 0}">0</td>
+                        </tr>
+
+                        <tr th:if="${agentsList == null or #lists.isEmpty(agentsList)}">
+                            <td colspan="4" style="padding:14px;color:var(--text-gray);">
+                                Aucun agent n’est associé à votre compte.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- TABLE DERNIERS INCIDENTS -->
+                <div style="background:#fff;border:1px solid var(--border-light);border-radius:12px;padding:16px;margin-top:16px;">
+                    <h3 style="margin:0 0 10px 0;font-size:16px;">
+                        <i class="fas fa-clock"></i> Derniers incidents
+                    </h3>
+
+                    <table style="width:100%;border-collapse:collapse;">
+                        <thead>
+                        <tr style="text-align:left;color:var(--text-gray);font-size:13px;">
+                            <th>Titre</th>
+                            <th>Catégorie</th>
+                            <th>État</th>
+                            <th>Date</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="i : ${data.lastIncidents}">
+                            <td th:text="${i.titre}">Titre</td>
+                            <td th:text="${i.categorie}">PROPRETE</td>
+                            <td th:text="${i.etat}">NOUVEAU</td>
+                            <td th:text="${i.dateCreation != null ? #temporals.format(i.dateCreation,'dd/MM/yyyy HH:mm') : '-'}">-</td>
+                        </tr>
+
+                        <!-- ✅ test correct + colspan correct -->
+                        <tr th:if="${data.lastIncidents == null or #lists.isEmpty(data.lastIncidents)}">
+                            <td colspan="4" style="padding:14px;color:var(--text-gray);">
+                                Aucun incident dans votre périmètre.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- DÉLAI MOYEN -->
+                <div style="margin-top:12px;color:var(--text-gray);font-size:13px;">
+                    Délai moyen de clôture :
+                    <b th:text="${#numbers.formatDecimal(data.delaiMoyenHeures,1,1)}">0.0</b> heures
+                    (calculé sur les incidents clôturés).
+                </div>
+
             </div>
         </div>
     </main>
 </div>
 
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const quartierLabels = /*[[${quartierLabels}]]*/ [];
+    const quartierValues = /*[[${quartierValues}]]*/ [];
+
+    const monthLabels = /*[[${monthLabels}]]*/ [];
+    const monthValues = /*[[${monthValues}]]*/ [];
+
+    const c2 = document.getElementById('quartierChart');
+    if (c2) new Chart(c2, {
+        type: 'bar',
+        data: { labels: quartierLabels, datasets: [{ label: 'Quartiers', data: quartierValues }] }
+    });
+
+    const c3 = document.getElementById('monthChart');
+    if (c3) new Chart(c3, {
+        type: 'line',
+        data: { labels: monthLabels, datasets: [{ label: 'Nbr Incidents/mois', data: monthValues }] }
+    });
+    /*]]>*/
+</script>
+
 <script>
-    // Toggle sidebar on mobile
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.querySelector('.sidebar');
-
-    menuToggle.addEventListener('click', () => {
-        sidebar.classList.toggle('active');
-    });
-
-    // Logout button functionality
-    const logoutBtn = document.getElementById('logoutBtn');
-    logoutBtn.addEventListener('click', () => {
-        alert('Déconnexion effectuée avec succès');
-        // window.location.href = '/logout'; // Pour une vraie déconnexion
-    });
-
-    // Active menu item selection
     const menuItems = document.querySelectorAll('.sidebar-menu a');
+    const pageTitle = document.querySelector('.page-title');
+
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', () => sidebar.classList.toggle('active'));
+    }
+
     menuItems.forEach(item => {
         item.addEventListener('click', (e) => {
-            e.preventDefault();
+            const href = item.getAttribute('href');
+            if (!href || href === '#') e.preventDefault();
+
             menuItems.forEach(i => i.classList.remove('active'));
             item.classList.add('active');
 
-            // Close sidebar on mobile after selection
-            if (window.innerWidth <= 1024) {
-                sidebar.classList.remove('active');
-            }
+            const menuText = item.querySelector('.menu-text')?.textContent;
+            if (menuText && pageTitle) pageTitle.textContent = menuText;
+
+            if (window.innerWidth <= 1024 && sidebar) sidebar.classList.remove('active');
         });
     });
 
-    // Close sidebar when clicking outside on mobile
     document.addEventListener('click', (event) => {
-        const isClickInsideSidebar = sidebar.contains(event.target);
-        const isClickOnMenuToggle = menuToggle.contains(event.target);
+        if (!sidebar || !menuToggle) return;
+        const inside = sidebar.contains(event.target);
+        const onToggle = menuToggle.contains(event.target);
 
-        if (window.innerWidth <= 1024 &&
-            !isClickInsideSidebar &&
-            !isClickOnMenuToggle &&
-            sidebar.classList.contains('active')) {
+        if (window.innerWidth <= 1024 && !inside && !onToggle && sidebar.classList.contains('active')) {
             sidebar.classList.remove('active');
         }
     });
-
-    // Update page title based on active menu item
-    menuItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const menuText = item.querySelector('.menu-text').textContent;
-            document.querySelector('.page-title').textContent = menuText;
-        });
-    });
 </script>
+
 </body>
 </html>

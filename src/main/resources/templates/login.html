@@ -2,32 +2,149 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Connexion admin</title>
+    <title>Connexion Admin - Plateforme de gestion d'incidents</title>
+
+    <!-- Icons & fonts -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
 </head>
+
 <body>
-<h2>Connexion </h2>
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="login-logo">
+                <i class="fas fa-city"></i>
+            </div>
 
-<div th:if="${param.error}">
-    <p style="color:red;">Identifiants incorrects.</p>
+            <h1 class="login-title">Connecter à votre compte</h1>
+
+            <p class="login-subtitle">
+                Plateforme de gestion des incidents municipaux
+            </p>
+        </div>
+
+        <!-- Messages d'erreur/succès -->
+        <div th:if="${param.error}" class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <div>
+                <strong>Identifiants incorrects</strong>
+                <div style="margin-top: 4px; font-size: 13px;">
+                    Veuillez vérifier votre nom d'utilisateur et mot de passe.
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${param.logout}" class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            <div>
+                <strong>Déconnexion réussie</strong>
+                <div style="margin-top: 4px; font-size: 13px;">
+                    Vous avez été déconnecté avec succès.
+                </div>
+            </div>
+        </div>
+
+        <form th:action="@{/login}" method="post" class="login-form" id="loginForm">
+            <div class="form-group">
+                <label for="username">
+                    <i class="fas fa-user" style="margin-right: 6px;"></i>
+                    Nom d'utilisateur
+                </label>
+                <div class="input-with-icon">
+                    <i class="fas fa-user-circle"></i>
+                    <input type="text"
+                           id="username"
+                           name="username"
+                           class="form-control"
+                           placeholder="admin@ville.fr"
+                           required
+                           autocomplete="username"
+                           autofocus>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">
+                    <i class="fas fa-key" style="margin-right: 6px;"></i>
+                    Mot de passe
+                </label>
+                <div class="input-with-icon password-field">
+                    <i class="fas fa-lock"></i>
+                    <input type="password"
+                           id="password"
+                           name="password"
+                           class="form-control"
+                           placeholder="••••••••"
+                           required
+                           autocomplete="current-password">
+                    <button type="button" class="password-toggle" id="togglePassword">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="login-button" id="submitBtn">
+                <span>Se connecter</span>
+                <div class="loading" id="loadingSpinner"></div>
+            </button>
+        </form>
+
+        <div class="security-note">
+            <i class="fas fa-shield-alt"></i>
+<!--            <span>Connexion sécurisée par chiffrement SSL</span>-->
+            <span class="app-name-footer">Toujours avec vous ! </span> •
+        </div>
+
+        <div class="login-footer">
+            <p style="font-size: 12px; color: var(--text-gray); margin-top: 8px;">
+                <i class="fas fa-info-circle"></i>
+                L'inscription est réservée aux citoyens de la ville
+            </p>
+            <p class="login-link">
+                Vous étes un citoyen et vous n'avez pas  un compte ?
+                <a th:href="@{/register}">S'inscrire</a>
+            </p>
+        </div>
+
+    </div>
 </div>
 
-<div th:if="${param.logout}">
-    <p style="color:green;">Vous avez été déconnecté.</p>
-</div>
+<script>
+    // Fonction pour afficher/masquer le mot de passe
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const passwordInput = document.getElementById('password');
+        const icon = this.querySelector('i');
 
-<form th:action="@{/login}" method="post">
-    <label for="username">Nom d'utilisateur</label>
-    <input type="text" id="username" name="username" required>
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    });
 
-    <br><br>
 
-    <label for="password">Mot de passe</label>
-    <input type="password" id="password" name="password" required>
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const btnText = submitBtn.querySelector('span');
 
-    <br><br>
+        submitBtn.disabled = true;
+        btnText.textContent = 'Connexion en cours...';
+        loadingSpinner.style.display = 'block';
+    });
 
-    <button type="submit">Se connecter</button>
-</form>
+
+    document.getElementById('username').focus();
+</script>
 
 </body>
 </html>

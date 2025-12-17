@@ -101,27 +101,15 @@
                     <span class="menu-text">Affecter Agents-Admin</span>
                 </a>
             </li>
-
-            <li>
-                <a href="#">
-                    <span class="menu-icon"><i class="fas fa-users-cog"></i></span>
-                    <span class="menu-text">Gérer les comptes</span>
-                </a>
-            </li>
-
-            <li>
-                <a href="#">
-                    <span class="menu-icon"><i class="fas fa-cog"></i></span>
-                    <span class="menu-text">Paramètres globaux</span>
-                </a>
-            </li>
         </ul>
 
         <div class="sidebar-footer">
-            <button class="logout-btn" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Déconnexion</span>
-            </button>
+            <form th:action="@{/logout}" method="post">
+                <button class="logout-btn" type="submit">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Déconnexion</span>
+                </button>
+            </form>
         </div>
     </aside>
 
@@ -290,12 +278,6 @@
         });
     }
 
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            window.location.href = '/logout';
-        });
-    }
 
     const menuItems = document.querySelectorAll('.sidebar-menu a');
     menuItems.forEach(item => {

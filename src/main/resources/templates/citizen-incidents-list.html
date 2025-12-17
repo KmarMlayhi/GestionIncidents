@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mes incidents</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/incidentCitoyen.css}">
+
+</head>
+
+<body>
+<div class="dashboard-container">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-city"></i>
+            </div>
+            <div class="app-name">Espace citoyen</div>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a th:href="@{/citoyen/dashboard}">
+                    <span class="menu-icon"><i class="fas fa-home"></i></span>
+                    <span class="menu-text">Tableau de bord</span>
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/citoyen/incidents/nouveau}">
+                    <span class="menu-icon"><i class="fas fa-plus-circle"></i></span>
+                    <span class="menu-text">Déclarer un incident</span>
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/citoyen/incidents}" class="active">
+                    <span class="menu-icon"><i class="fas fa-list"></i></span>
+                    <span class="menu-text">Mes incidents</span>
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/citoyen/profil}">
+                    <span class="menu-icon"><i class="fas fa-user-cog"></i></span>
+                    <span class="menu-text">Mon profil</span>
+                </a>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <form th:action="@{/logout}" method="post">
+                <button class="logout-btn" type="submit">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Déconnexion</span>
+                </button>
+            </form>
+        </div>
+    </aside>
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <nav class="navbar">
+            <div class="navbar-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="page-title">Mes incidents</div>
+            </div>
+            <div class="navbar-right">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Rechercher un incident...">
+                </div>
+
+                <div class="navbar-actions">
+                    <div class="action-icon">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge"></span>
+                    </div>
+
+                    <div class="user-profile">
+                        <div class="user-avatar" th:text="${initials}">CT</div>
+                        <div class="user-info">
+                            <div class="user-name" th:text="${fullName}">Citoyen</div>
+                            <div class="user-role" th:text="${roleLabel}">Citoyen</div>
+                        </div>
+                        <i class="fas fa-chevron-down"
+                           style="font-size: 12px; color: var(--text-gray);"></i>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="content content-top">
+            <div style="max-width:1100px;margin:0 auto;">
+
+                <!-- messages -->
+                <div th:if="${successMessage}" class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> <span th:text="${successMessage}"></span>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-error">
+                    <i class="fas fa-exclamation-circle"></i> <span th:text="${errorMessage}"></span>
+                </div>
+
+                <div class="page-header">
+                    <h2 class="page-title-main">
+                        <i class="fas fa-list"></i>
+                        Mes incidents déclarés
+                    </h2>
+                    <p class="page-subtitle">
+                        Consultez l’historique de vos signalements et leur état de traitement.
+                    </p>
+                </div>
+
+                <div class="top-actions">
+                    <a th:href="@{/citoyen/incidents/nouveau}" class="primary-btn">
+                        <i class="fas fa-plus"></i> Nouvel incident
+                    </a>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Titre</th>
+                                <th>Catégorie</th>
+                                <th>État</th>
+                                <th>Date</th>
+                                <th>Détails</th>
+                                <th>Feedback</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            <tr th:each="incident : ${incidents}">
+                                <td th:text="${incident.titre}">Titre</td>
+                                <td th:text="${incident.categorie}">PROPRETE</td>
+
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="
+                                          ${incident.etat != null and incident.etat.name() == 'NOUVEAU'} ? 'badge-open' :
+                                          (${incident.etat != null and incident.etat.name() == 'PRISE_EN_CHARGE'} ? 'badge-progress' :
+                                          (${incident.etat != null and incident.etat.name() == 'EN_RESOLUTION'} ? 'badge-progress' :
+                                          (${incident.etat != null and incident.etat.name() == 'RESOLUE'} ? 'badge-closed' :
+                                          (${incident.etat != null and incident.etat.name() == 'CLOTURE'} ? 'badge-closed' : ''))))"
+                                          th:text="${incident.etat}">
+                                    </span>
+                                </td>
+
+                                <td th:text="${incident.dateCreation != null ? #temporals.format(incident.dateCreation,'dd/MM/yyyy HH:mm') : '—'}">—</td>
+
+                                <!-- ======= Détails (modal) ======= -->
+                                <td>
+                                    <!-- description cachée (plus sûr que data-desc) -->
+                                    <div th:id="'desc-' + ${incident.id}" style="display:none;"
+                                         th:text="${incident.description}">—</div>
+
+                                    <!-- feedbacks cachés (HTML prêt) -->
+                                    <div th:id="'fb-' + ${incident.id}" style="display:none;">
+                                        <div th:if="${feedbacksByIncident != null
+                                                     and feedbacksByIncident[incident.id] != null
+                                                     and !#lists.isEmpty(feedbacksByIncident[incident.id])}">
+                                            <div th:each="fb : ${feedbacksByIncident[incident.id]}" class="fb-item">
+                                                <div class="fb-meta">
+                                                    <span class="fb-status"
+                                                          th:classappend="${fb.cloturer} ? '' : ' bad'"
+                                                          th:text="${fb.cloturer} ? 'Clôture approuvée' : 'Non clôturé'">
+                                                        Non clôturé
+                                                    </span>
+                                                    <span class="fb-date"
+                                                          th:text="${fb.dateFeedback != null ? #temporals.format(fb.dateFeedback,'dd/MM/yyyy HH:mm') : '-'}">-</span>
+                                                </div>
+                                                <div class="fb-comment" th:text="${fb.commentaire}">Commentaire…</div>
+                                            </div>
+                                        </div>
+
+                                        <div th:if="${feedbacksByIncident == null
+                                                     or feedbacksByIncident[incident.id] == null
+                                                     or #lists.isEmpty(feedbacksByIncident[incident.id])}">
+                                            <div class="muted">Aucun feedback envoyé pour cet incident.</div>
+                                        </div>
+                                    </div>
+
+                                    <button class="action-btn"
+                                            th:if="${incident.photos != null and !incident.photos.isEmpty()}"
+                                            th:attr="
+                                                data-title=${incident.titre},
+                                                data-photos=${#strings.arrayJoin(incident.photos.![nomPhoto], ',')},
+                                                data-descTarget=${'desc-' + incident.id},
+                                                data-fbTarget=${'fb-' + incident.id}"
+                                            onclick="openDetails(this)">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <span th:if="${incident.photos == null or incident.photos.isEmpty()}">—</span>
+                                </td>
+
+                                <!-- ✅ Feedback : affiché seulement si RESOLUE -->
+                                <td>
+                                    <div th:if="${incident.etat != null and incident.etat.name() == 'RESOLUE'}"
+                                         class="feedback-box">
+
+                                        <form th:action="@{'/citoyen/incidents/' + ${incident.id} + '/feedback'}"
+                                              method="post">
+                                            <input type="hidden" th:if="${_csrf != null}"
+                                                   th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                                            <textarea name="commentaire" required rows="3"
+                                                      placeholder="Écrivez votre feedback (obligatoire) ..."></textarea>
+
+                                            <div class="feedback-actions">
+                                                <label>
+                                                    <input type="checkbox" name="cloturer" value="true">
+                                                    Je confirme que c’est résolu (Clôturer)
+                                                </label>
+
+                                                <button type="submit" class="primary-btn">
+                                                    <i class="fas fa-paper-plane"></i> Envoyer
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                    <div th:if="${incident.etat == null or incident.etat.name() != 'RESOLUE'}">
+                                        —
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <div class="pagination" th:if="${totalPages != null and totalPages > 1}" style="margin-top:16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                            <!-- Précédent -->
+                            <a class="primary-btn"
+                               th:if="${currentPage > 0}"
+                               th:href="@{/citoyen/incidents(page=${currentPage - 1})}">
+                                ‹ Précédent
+                            </a>
+                            <span th:if="${currentPage == 0}" class="primary-btn" style="opacity:.5;pointer-events:none;">‹ Précédent</span>
+
+                            <!-- Numéros -->
+                            <a th:each="p : ${#numbers.sequence(0, totalPages - 1)}"
+                               th:href="@{/citoyen/incidents(page=${p})}"
+                               th:text="${p + 1}"
+                               class="primary-btn"
+                               th:style="${p == currentPage} ? 'background:var(--primary);color:#fff;' : ''">
+                            </a>
+
+                            <!-- Suivant -->
+                            <a class="primary-btn"
+                               th:if="${currentPage < totalPages - 1}"
+                               th:href="@{/citoyen/incidents(page=${currentPage + 1})}">
+                                Suivant ›
+                            </a>
+                            <span th:if="${currentPage >= totalPages - 1}" class="primary-btn" style="opacity:.5;pointer-events:none;">Suivant ›</span>
+
+                            <!-- Info -->
+                            <span style="margin-left:auto;color:var(--text-gray);font-size:13px;">
+                                Page <b th:text="${currentPage + 1}">1</b> / <b th:text="${totalPages}">1</b> —
+                                Total : <b th:text="${totalItems}">0</b>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- MODAL DÉTAILS -->
+<div id="photoModal" class="photo-modal" style="display:none;">
+    <div class="photo-modal-content">
+
+        <div class="modal-head">
+            <h3 style="margin:0;">
+                <i class="fas fa-circle-info"></i>
+                <span id="mTitle">Détails de l’incident</span>
+            </h3>
+            <span class="close" onclick="closeDetails()">&times;</span>
+        </div>
+
+        <div class="modal-body">
+            <div class="detail-grid">
+                <!-- Photos -->
+                <div class="detail-left">
+                    <div class="detail-section">
+                        <h4><i class="fas fa-camera"></i> Photos</h4>
+                        <div id="photoContainer" class="photos-grid"></div>
+                        <div id="noPhotos" class="muted" style="display:none;margin-top:8px;">
+                            Aucune photo disponible.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description + Feedback -->
+                <div class="detail-right">
+                    <div class="detail-section">
+                        <h4><i class="fas fa-align-left"></i> Description</h4>
+                        <div id="mDesc" class="muted">—</div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4><i class="fas fa-comments"></i> Mes feedbacks</h4>
+                        <div id="mFeedbacks"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<script>
+    function openDetails(btn) {
+        const title = btn.dataset.title || 'Détails de l’incident';
+        document.getElementById('mTitle').textContent = title;
+
+        // Description (depuis div cachée)
+        const descTarget = btn.dataset.desctarget;
+        const descEl = descTarget ? document.getElementById(descTarget) : null;
+        document.getElementById('mDesc').textContent = (descEl && descEl.textContent.trim() !== '')
+            ? descEl.textContent
+            : '—';
+
+        // Feedbacks (HTML depuis div cachée)
+        const fbTarget = btn.dataset.fbtarget;
+        const fbEl = fbTarget ? document.getElementById(fbTarget) : null;
+        document.getElementById('mFeedbacks').innerHTML = fbEl ? fbEl.innerHTML : '<div class="muted">—</div>';
+
+        // Photos
+        const photos = (btn.dataset.photos || '').trim();
+        const container = document.getElementById('photoContainer');
+        const noPhotos = document.getElementById('noPhotos');
+        container.innerHTML = '';
+
+        if (!photos) {
+            noPhotos.style.display = 'block';
+        } else {
+            noPhotos.style.display = 'none';
+            photos.split(',').forEach(p => {
+                const file = p.trim();
+                if (!file) return;
+                const img = document.createElement('img');
+                img.src = '/uploads/incidents/' + file;
+                img.onclick = function () { window.open(this.src, '_blank'); };
+                container.appendChild(img);
+            });
+        }
+
+        document.getElementById('photoModal').style.display = 'flex';
+    }
+
+    function closeDetails() {
+        document.getElementById('photoModal').style.display = 'none';
+    }
+
+    // Toggle sidebar
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.querySelector('.sidebar');
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', () => sidebar.classList.toggle('active'));
+    }
+</script>
+
+</body>
+</html>
