@@ -39,6 +39,10 @@
             </div>
 
             <form th:action="@{/register}" th:object="${form}" method="post" class="register-form" id="registerForm">
+                <input type="hidden"
+                       th:if="${_csrf != null}"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}" />
                 <div class="form-row">
                     <div class="form-group">
                         <label for="nom">

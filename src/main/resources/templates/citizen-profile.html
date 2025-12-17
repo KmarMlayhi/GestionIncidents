@@ -179,6 +179,10 @@
 
         <div class="sidebar-footer">
             <form th:action="@{/logout}" method="post">
+                <input type="hidden"
+                       th:if="${_csrf != null}"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}" />
                 <button class="logout-btn" type="submit">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Déconnexion</span>
