@@ -23,6 +23,7 @@ public interface IncidentRepository extends JpaRepository<Incident, Long> {
 
     List<Incident> findByQuartier(Quartier quartier);
     List<Incident> findByCitoyen(Utilisateur citoyen);
+
     // Tous les incidents d'un citoyen
     Page<Incident> findByCitoyen(Utilisateur citoyen, Pageable pageable);
 
