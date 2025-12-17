@@ -44,6 +44,10 @@
 
         <div class="sidebar-footer">
             <form th:action="@{/logout}" method="post">
+                <input type="hidden"
+                       th:if="${_csrf != null}"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}" />
                 <button class="logout-btn" type="submit">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Déconnexion</span>
@@ -188,7 +192,7 @@
                     <table class="table-modern" id="incidentsTable">
                         <thead>
                         <tr>
-                            <th>ID</th>
+
                             <th>Titre</th>
                             <th>État</th>
                             <th>Priorité</th>
@@ -204,7 +208,7 @@
                             th:attr="data-etat=${incident.etat != null ? incident.etat.name() : 'NOUVEAU'},
                            data-priorite=${incident.priorite != null ? incident.priorite.name() : ''}">
 
-                            <td class="mono" th:text="${incident.id}">1</td>
+
 
                             <td class="cell-strong" th:text="${incident.titre}">Titre</td>
 

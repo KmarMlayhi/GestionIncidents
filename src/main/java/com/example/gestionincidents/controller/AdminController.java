@@ -3,6 +3,7 @@ package com.example.gestionincidents.controller;
 import com.example.gestionincidents.DTO.AdminDashboardDTO;
 import com.example.gestionincidents.entity.*;
 import com.example.gestionincidents.repository.IncidentRepository;
+import com.example.gestionincidents.repository.RapportRepository;
 import com.example.gestionincidents.repository.UtilisateurRepository;
 import com.example.gestionincidents.service.AdminAnalyticsService;
 import com.example.gestionincidents.service.AdminPdfReportService;
@@ -32,6 +33,8 @@ public class AdminController {
     private final IncidentRepository incidentRepository;
     private final AdminAnalyticsService adminAnalyticsService;
     private final AdminPdfReportService adminPdfReportService;
+    private final RapportRepository rapportRepository;
+
 
 
 
@@ -40,13 +43,14 @@ public class AdminController {
 
     public AdminController(ConnectedUserInfoService connectedUserInfoService,
                            UtilisateurRepository utilisateurRepository,
-                           IncidentRepository incidentRepository, AdminAnalyticsService adminAnalyticsService, AdminPdfReportService adminPdfReportService,
+                           IncidentRepository incidentRepository, AdminAnalyticsService adminAnalyticsService, AdminPdfReportService adminPdfReportService, RapportRepository rapportRepository,
                            IncidentWorkflowService workflowService) {
         this.connectedUserInfoService = connectedUserInfoService;
         this.utilisateurRepository = utilisateurRepository;
         this.incidentRepository = incidentRepository;
         this.adminAnalyticsService = adminAnalyticsService;
         this.adminPdfReportService = adminPdfReportService;
+        this.rapportRepository = rapportRepository;
         this.workflowService = workflowService;
     }
 
@@ -115,7 +119,17 @@ public class AdminController {
                 ));
 
         byte[] pdf = adminPdfReportService.build(data, agents, nbParAgent);
+        Rapport r = new Rapport();
+        r.setAuteur(admin);
+        r.setDateGeneration(java.time.LocalDate.now());
 
+        // un texte simple
+        r.setTexte("Rapport PDF généré. Total=" + data.getTotal()
+                + ", Nouveaux=" + data.getNouveaux()
+                + ", En résolution=" + data.getEnResolution()
+                + ", Clôturés=" + data.getClotures());
+
+        rapportRepository.save(r);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=rapport-admin.pdf")
                 .contentType(MediaType.APPLICATION_PDF)

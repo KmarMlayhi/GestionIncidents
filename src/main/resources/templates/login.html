@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Connexion Admin - Plateforme de gestion d'incidents</title>
+    <title>Connexion - Plateforme de gestion d'incidents</title>
 
     <!-- Icons & fonts -->
     <link rel="stylesheet"
@@ -50,6 +50,10 @@
         </div>
 
         <form th:action="@{/login}" method="post" class="login-form" id="loginForm">
+            <input type="hidden"
+                   th:if="${_csrf != null}"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}" />
             <div class="form-group">
                 <label for="username">
                     <i class="fas fa-user" style="margin-right: 6px;"></i>

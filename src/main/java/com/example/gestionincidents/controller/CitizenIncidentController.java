@@ -16,6 +16,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDateTime;
@@ -29,6 +31,12 @@ import java.util.Map;
 @Controller
 @RequestMapping("/citoyen/incidents")
 public class CitizenIncidentController {
+
+    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+    private static final List<String> ALLOWED_CONTENT_TYPES = List.of(
+            "image/jpeg",
+            "image/png"
+    );
 
     private final IncidentRepository incidentRepository;
     private final UtilisateurRepository utilisateurRepository;
@@ -111,38 +119,31 @@ public class CitizenIncidentController {
                                  Authentication authentication,
                                  RedirectAttributes redirectAttributes) {
 
-        try {
-            // 1) Récupérer le citoyen connecté
-            String email = authentication.getName();
-            Utilisateur citoyen = utilisateurRepository.findByEmail(email)
-                    .orElseThrow(() -> new IllegalStateException("Citoyen introuvable : " + email));
+        String email = authentication.getName();
+        Utilisateur citoyen = utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Citoyen introuvable : " + email));
 
-            // 2) Construire l'incident
+        try {
+            // ✅ 0) Valider les photos AVANT de créer/sauvegarder l'incident
+            validatePhotosOrThrow(photos);
+
+            // 1) Construire l'incident
             Incident incident = new Incident();
             incident.setTitre(form.getTitre());
             incident.setDescription(form.getDescription());
             incident.setCategorie(form.getCategorie());
-
-            // Si la priorité ne doit PAS être choisie par le citoyen, laisse null :
-            // incident.setPriorite(null);
             incident.setPriorite(form.getPriorite());
-
             incident.setDateSignalement(LocalDateTime.now());
             incident.setDateCreation(LocalDateTime.now());
-            incident.setEtat(EtatIncident.NOUVEAU); // valeur qui existe bien dans ton enum SQL
+            incident.setEtat(EtatIncident.NOUVEAU);
             incident.setLatitude(form.getLatitude());
             incident.setLongitude(form.getLongitude());
             incident.setCitoyen(citoyen);
 
-            // =====================
-            // GESTION DU QUARTIER
-            // =====================
+            // Quartier
             String quartierNom = form.getQuartierNom();
-
             if (quartierNom != null && !quartierNom.trim().isEmpty()) {
-
                 String nomNettoye = quartierNom.trim();
-
                 Quartier quartier = quartierRepository
                         .findByNomIgnoreCase(nomNettoye)
                         .orElseGet(() -> {
@@ -150,62 +151,125 @@ public class CitizenIncidentController {
                             q.setNom(nomNettoye);
                             return quartierRepository.save(q);
                         });
-
                 incident.setQuartier(quartier);
             }
-            // Sauvegarde de l'incident
+
+            // ✅ 2) Sauvegarde incident seulement si photos OK
             Incident saved = incidentRepository.save(incident);
 
-            // 3) Sauvegarder les photos si présentes
+            // ✅ 3) Sauvegarder photos
             if (photos != null && !photos.isEmpty()) {
                 savePhotosForIncident(saved, photos);
             }
 
             redirectAttributes.addFlashAttribute("successMessage",
                     "Incident déclaré avec succès. Merci pour votre contribution !");
+            return "redirect:/citoyen/incidents";
+
+        } catch (IllegalArgumentException ex) {
+            // ✅ Message clair pour l'utilisateur
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            // ✅ Retourner vers le formulaire (pas la liste)
+            return "redirect:/citoyen/incidents/nouveau";
+
         } catch (Exception e) {
             e.printStackTrace();
             redirectAttributes.addFlashAttribute("errorMessage",
-                    "Erreur lors de la déclaration de l'incident : " + e.getMessage());
+                    "Erreur lors de la déclaration de l'incident.");
+            return "redirect:/citoyen/incidents/nouveau";
         }
+    }
 
-        // 👉 Après le POST, on redirige vers le GET ci-dessus (/citoyen/incidents)
-        return "redirect:/citoyen/incidents";
+    private void validatePhotosOrThrow(List<MultipartFile> files) {
+        if (files == null) return;
+
+        for (MultipartFile file : files) {
+            if (file == null || file.isEmpty()) continue;
+
+            if (file.getSize() > MAX_FILE_SIZE) {
+                throw new IllegalArgumentException("Image trop volumineuse (max 5 MB).");
+            }
+
+            String contentType = file.getContentType();
+            if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
+                throw new IllegalArgumentException("Format non autorisé. Seuls JPG/PNG sont acceptés.");
+            }
+
+            String original = file.getOriginalFilename();
+            if (original == null || !original.matches("(?i).+\\.(jpg|jpeg|png)$")) {
+                throw new IllegalArgumentException("Extension invalide. Seuls .jpg/.jpeg/.png sont acceptés.");
+            }
+
+            try {
+                BufferedImage image = ImageIO.read(file.getInputStream());
+                if (image == null) {
+                    throw new IllegalArgumentException("Le fichier uploadé n'est pas une image valide.");
+                }
+            } catch (IOException e) {
+                throw new IllegalArgumentException("Impossible de lire l'image uploadée.");
+            }
+        }
     }
 
     // 🟦 4) Upload des photos en local
     private void savePhotosForIncident(Incident incident, List<MultipartFile> files) throws IOException {
+
         Path uploadDir = Paths.get("src/main/resources/static/uploads/incidents");
         if (!Files.exists(uploadDir)) {
             Files.createDirectories(uploadDir);
         }
 
         for (MultipartFile file : files) {
-            if (file.isEmpty()) continue;
 
-            String extension = "";
-            String original = file.getOriginalFilename();
-            if (original != null && original.contains(".")) {
-                extension = original.substring(original.lastIndexOf("."));
+            // ❌ Fichier vide
+            if (file.isEmpty()) {
+                continue;
             }
 
+            // ❌ Taille maximale
+            if (file.getSize() > MAX_FILE_SIZE) {
+                throw new IllegalArgumentException("Image trop volumineuse (max 5 MB)");
+            }
+
+            // ❌ Type MIME non autorisé
+            String contentType = file.getContentType();
+            if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
+                throw new IllegalArgumentException("Type de fichier non autorisé");
+            }
+
+            // ❌ Extension invalide
+            String original = file.getOriginalFilename();
+            if (original == null || !original.matches("(?i).+\\.(jpg|jpeg|png)$")) {
+                throw new IllegalArgumentException("Extension de fichier invalide");
+            }
+
+            // ✅ Vérification réelle de l’image (anti-fichier déguisé)
+            BufferedImage image = ImageIO.read(file.getInputStream());
+            if (image == null) {
+                throw new IllegalArgumentException("Le fichier n'est pas une image valide");
+            }
+
+            // ✅ Génération d’un nom sécurisé
+            String extension = original.substring(original.lastIndexOf("."));
             String uniqueName = UUID.randomUUID() + extension;
+
             Path destination = uploadDir.resolve(uniqueName);
 
-            // Copie physique du fichier
+            // ✅ Copie sécurisée
             Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
 
-            // Enregistrement en base
+            // ✅ Enregistrement en base
             Photo photo = new Photo();
             photo.setNomPhoto(uniqueName);
-            photo.setChemin(uploadDir.toString());           // ex: "uploads/incidents"
-            photo.setType(file.getContentType());            // ex: "image/jpeg"
+            photo.setChemin("uploads/incidents"); // chemin relatif (bonne pratique)
+            photo.setType(contentType);
             photo.setDateUpload(LocalDateTime.now());
             photo.setIncident(incident);
 
             photoRepository.save(photo);
         }
     }
+
     @PostMapping("/{id}/feedback")
     public String envoyerFeedback(@PathVariable Long id,
                                   @RequestParam("commentaire") String commentaire,
