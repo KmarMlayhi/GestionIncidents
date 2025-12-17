@@ -1,9 +1,7 @@
 package com.example.gestionincidents.controller;
 
 import com.example.gestionincidents.entity.*;
-import com.example.gestionincidents.repository.IncidentRepository;
-import com.example.gestionincidents.repository.PhotoRepository;
-import com.example.gestionincidents.repository.UtilisateurRepository;
+import com.example.gestionincidents.repository.*;
 import com.example.gestionincidents.service.CitizenFeedbackService;
 import com.example.gestionincidents.service.ConnectedUserInfoService;
 import com.example.gestionincidents.web.IncidentForm;
@@ -13,14 +11,20 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import com.example.gestionincidents.repository.QuartierRepository;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.Map;
+
+
 
 @Controller
 @RequestMapping("/citoyen/incidents")
@@ -32,38 +36,57 @@ public class CitizenIncidentController {
     private final ConnectedUserInfoService connectedUserInfoService;
     private final QuartierRepository quartierRepository;
     private final CitizenFeedbackService citizenFeedbackService;
+    private final IncidentFeedbackRepository feedbackRepository;
+
 
     public CitizenIncidentController(IncidentRepository incidentRepository,
                                      UtilisateurRepository utilisateurRepository,
                                      PhotoRepository photoRepository,
                                      ConnectedUserInfoService connectedUserInfoService,
                                      QuartierRepository quartierRepository,
-                                     CitizenFeedbackService citizenFeedbackService){
+                                     CitizenFeedbackService citizenFeedbackService, IncidentFeedbackRepository feedbackRepository){
         this.incidentRepository = incidentRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.photoRepository = photoRepository;
         this.quartierRepository = quartierRepository;
         this.connectedUserInfoService = connectedUserInfoService;
         this.citizenFeedbackService = citizenFeedbackService;
+        this.feedbackRepository = feedbackRepository;
     }
 
     // 🟦 1) PAGE "MES INCIDENTS"  => GET /citoyen/incidents
     @GetMapping
-    public String listIncidents(Model model, Authentication authentication) {
+    public String listIncidents(@RequestParam(defaultValue = "0") int page,
+                                Model model,
+                                Authentication authentication) {
 
-        // Infos pour le header (nom, rôle, etc.)
         connectedUserInfoService.addConnectedUserInfo(model, authentication);
 
-        // Récupérer le citoyen connecté
         String email = authentication.getName();
         Utilisateur citoyen = utilisateurRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalStateException("Citoyen introuvable : " + email));
 
-        // Charger ses incidents
-        List<Incident> incidents = incidentRepository.findByCitoyen(citoyen);
+        Pageable pageable = PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "dateCreation"));
+        Page<Incident> incidentsPage = incidentRepository.findByCitoyen(citoyen, pageable);
+
+        List<Incident> incidents = incidentsPage.getContent();
         model.addAttribute("incidents", incidents);
 
-        // Vue à créer : templates/citizen-incidents-list.html
+        // ✅ feedbacks seulement pour les incidents de la page actuelle
+        Map<Long, List<IncidentFeedback>> feedbacksByIncident = new HashMap<>();
+        for (Incident inc : incidents) {
+            feedbacksByIncident.put(
+                    inc.getId(),
+                    feedbackRepository.findByIncidentIdOrderByDateFeedbackDesc(inc.getId())
+            );
+        }
+        model.addAttribute("feedbacksByIncident", feedbacksByIncident);
+
+        // ✅ infos pagination
+        model.addAttribute("currentPage", incidentsPage.getNumber());      // 0-based
+        model.addAttribute("totalPages", incidentsPage.getTotalPages());
+        model.addAttribute("totalItems", incidentsPage.getTotalElements());
+
         return "citizen-incidents-list";
     }
 

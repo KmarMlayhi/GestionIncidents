@@ -1,7 +1,9 @@
 package com.example.gestionincidents.controller;
 
+import com.example.gestionincidents.DTO.AgentDashboardDTO;
 import com.example.gestionincidents.entity.Incident;
 import com.example.gestionincidents.entity.IncidentFeedback;
+import com.example.gestionincidents.service.AgentAnalyticsService;
 import com.example.gestionincidents.service.AgentIncidentService;
 import com.example.gestionincidents.service.ConnectedUserInfoService;
 import org.springframework.security.core.Authentication;
@@ -21,16 +23,24 @@ public class AgentController {
 
     private final ConnectedUserInfoService connectedUserInfoService;
     private final AgentIncidentService agentIncidentService;
+    private final AgentAnalyticsService agentAnalyticsService;
 
     public AgentController(ConnectedUserInfoService connectedUserInfoService,
-                           AgentIncidentService agentIncidentService) {
+                           AgentIncidentService agentIncidentService, AgentAnalyticsService agentAnalyticsService) {
         this.connectedUserInfoService = connectedUserInfoService;
         this.agentIncidentService = agentIncidentService;
+        this.agentAnalyticsService = agentAnalyticsService;
     }
 
     @GetMapping("/dashboard")
     public String agentDashboard(Model model, Authentication authentication) {
         connectedUserInfoService.addConnectedUserInfo(model, authentication);
+        String email = authentication.getName();
+        AgentDashboardDTO data = agentAnalyticsService.buildDashboard(email);
+
+        model.addAttribute("data", data);
+        model.addAttribute("pageTitle", "Tableau de bord");
+        model.addAttribute("activeMenu", "dashboard");
         return "agent-dashboard";
     }
 

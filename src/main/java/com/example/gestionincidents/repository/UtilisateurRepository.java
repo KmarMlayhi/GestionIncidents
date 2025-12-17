@@ -11,10 +11,10 @@ import java.util.Optional;
 
 public interface UtilisateurRepository extends JpaRepository<Utilisateur, Long> {
     Optional<Utilisateur> findByEmail(String email);
-    // 🔹 Tous les utilisateurs d’un rôle donné
+    // Tous les utilisateurs d’un rôle donné
     List<Utilisateur> findByRole(UserRole role);
 
-    // 🔹 Tous les agents qui n’ont encore aucun admin responsable
+    // Tous les agents qui n’ont encore aucun admin responsable
     List<Utilisateur> findByRoleAndAdministrateurIsNull(UserRole role);
 
     @Query("""

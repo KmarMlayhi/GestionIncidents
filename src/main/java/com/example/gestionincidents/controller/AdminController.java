@@ -1,10 +1,16 @@
 package com.example.gestionincidents.controller;
 
+import com.example.gestionincidents.DTO.AdminDashboardDTO;
 import com.example.gestionincidents.entity.*;
 import com.example.gestionincidents.repository.IncidentRepository;
 import com.example.gestionincidents.repository.UtilisateurRepository;
+import com.example.gestionincidents.service.AdminAnalyticsService;
+import com.example.gestionincidents.service.AdminPdfReportService;
 import com.example.gestionincidents.service.ConnectedUserInfoService;
 import com.example.gestionincidents.service.IncidentWorkflowService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,7 +18,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin")
@@ -21,27 +30,98 @@ public class AdminController {
     private final ConnectedUserInfoService connectedUserInfoService;
     private final UtilisateurRepository utilisateurRepository;
     private final IncidentRepository incidentRepository;
+    private final AdminAnalyticsService adminAnalyticsService;
+    private final AdminPdfReportService adminPdfReportService;
+
+
 
     // ✅ nouveau : service workflow
     private final IncidentWorkflowService workflowService;
 
     public AdminController(ConnectedUserInfoService connectedUserInfoService,
                            UtilisateurRepository utilisateurRepository,
-                           IncidentRepository incidentRepository,
+                           IncidentRepository incidentRepository, AdminAnalyticsService adminAnalyticsService, AdminPdfReportService adminPdfReportService,
                            IncidentWorkflowService workflowService) {
         this.connectedUserInfoService = connectedUserInfoService;
         this.utilisateurRepository = utilisateurRepository;
         this.incidentRepository = incidentRepository;
+        this.adminAnalyticsService = adminAnalyticsService;
+        this.adminPdfReportService = adminPdfReportService;
         this.workflowService = workflowService;
     }
 
     @GetMapping
     public String adminHome(Model model, Authentication authentication) {
         connectedUserInfoService.addConnectedUserInfo(model, authentication);
+        String email = authentication.getName();
+        AdminDashboardDTO data = adminAnalyticsService.buildDashboard(email);
+        model.addAttribute("data", data);
+
+        model.addAttribute("quartierLabels", data.getQuartierLabels());
+        model.addAttribute("quartierValues", data.getQuartierValues());
+
+        model.addAttribute("monthLabels", data.getMonthLabels());
+        model.addAttribute("monthValues", data.getMonthValues());
+        Utilisateur admin = utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Administrateur introuvable : " + email));
+
+        List<Utilisateur> agentsList = (admin.getRole() == UserRole.SUPER_ADMIN)
+                ? utilisateurRepository.findByRole(UserRole.AGENT)
+                : utilisateurRepository.findAgentsByAdministrateur(admin.getId());
+
+        model.addAttribute("agentsList", agentsList);
+
+        Map<Long, Long> agentIncidentCounts = new HashMap<>();
+        if (!agentsList.isEmpty()) {
+            List<Incident> incs = incidentRepository.findByAgentAssigneIn(agentsList);
+
+            agentIncidentCounts = incs.stream()
+                    .filter(i -> i.getAgentAssigne() != null && i.getAgentAssigne().getId() != null)
+                    .collect(Collectors.groupingBy(
+                            i -> i.getAgentAssigne().getId(),
+                            Collectors.counting()
+                    ));
+        }
+        model.addAttribute("agentIncidentCounts", agentIncidentCounts);
+
         model.addAttribute("pageTitle", "Tableau de bord");
         model.addAttribute("activeMenu", "dashboard");
         return "admin-dashboard";
     }
+
+    @GetMapping("/rapports/pdf")
+    public ResponseEntity<byte[]> exportPdf(Authentication authentication) {
+
+        String email = authentication.getName();
+
+        // data (KPIs + lastIncidents) déjà calculés
+        AdminDashboardDTO data = adminAnalyticsService.buildDashboard(email);
+
+        // agents de cet admin
+        Utilisateur admin = utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Administrateur introuvable : " + email));
+
+        List<Utilisateur> agents = (admin.getRole() == UserRole.SUPER_ADMIN)
+                ? utilisateurRepository.findByRole(UserRole.AGENT)
+                : utilisateurRepository.findAgentsByAdministrateur(admin.getId());
+
+        // compter incidents par agent (simple)
+        List<Incident> all = incidentRepository.findByAgentAssigneIn(agents);
+        Map<Long, Long> nbParAgent = all.stream()
+                .filter(i -> i.getAgentAssigne() != null)
+                .collect(java.util.stream.Collectors.groupingBy(
+                        i -> i.getAgentAssigne().getId(),
+                        java.util.stream.Collectors.counting()
+                ));
+
+        byte[] pdf = adminPdfReportService.build(data, agents, nbParAgent);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=rapport-admin.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+    }
+
 
     // ✅ Page : incidents du département + liste des agents de cet admin
     @GetMapping("/incidents")

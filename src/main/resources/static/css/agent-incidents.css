@@ -1,6 +1,6 @@
 /* Styles principaux */
 :root {
-    --primary-color: #3b82f6;
+    --primary-color: #c17676;
     --primary-light: #eff6ff;
     --secondary-color: #64748b;
     --success-color: #10b981;
@@ -14,6 +14,162 @@
     --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
     --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
+.details-btn{
+    all: unset;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 10px 14px;
+    border-radius: 10px;
+
+    border: 1px solid #2563eb;
+    background: #ffffff;
+
+    color: #1d4ed8;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+
+    transition: 0.15s ease;
+}
+
+.details-btn i{
+    color: #1d4ed8;
+    font-size: 14px;
+}
+
+.details-btn:hover{
+    background: rgba(37, 99, 235, 0.10);
+    transform: translateY(-1px);
+}
+
+.details-btn:active{
+    transform: translateY(0);
+}
+
+.details-btn:focus-visible{
+    outline: 3px solid rgba(37, 99, 235, 0.25);
+    outline-offset: 2px;
+}
+/* ===== Buttons (scopé uniquement sur cette page) ===== */
+.agent-incidents-page{
+    --primary-color: var(--primary-color, #2563eb);
+    --border-color: var(--border-color, #e2e8f0);
+    --text-dark: var(--text-dark, #0f172a);
+    --text-gray: var(--text-gray, #64748b);
+}
+
+.agent-incidents-page .btn{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 10px 14px;
+    border-radius: 10px;
+
+    border: 1px solid var(--border-color);
+    background: #fff;
+    color: var(--text-dark);
+
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+    transition: 0.15s ease;
+    text-decoration: none;
+}
+
+.agent-incidents-page .btn i{ color: inherit; }
+
+.agent-incidents-page .btn:hover{
+    transform: translateY(-1px);
+    background: rgba(15, 23, 42, 0.03);
+}
+
+.agent-incidents-page .btn:active{ transform: translateY(0); }
+
+.agent-incidents-page .btn:focus-visible{
+    outline: 3px solid rgba(37, 99, 235, 0.25);
+    outline-offset: 2px;
+}
+
+/* Variantes */
+.agent-incidents-page .btn-primary{
+    background: #97aeff;
+    border-color: var(--primary-color);
+    color: #fff;
+}
+
+.agent-incidents-page .btn-outline{
+    background: #97aeff;
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.agent-incidents-page .btn-outline:hover{
+    background: rgba(37, 99, 235, 0.10);
+}
+
+/* Warning / Success visibles */
+.agent-incidents-page .btn-warning{
+    background: #f59e0b;
+    border-color: #f59e0b;
+    color: #fff;
+}
+
+.agent-incidents-page .btn-success{
+    background: #10b981;
+    border-color: #10b981;
+    color: #fff;
+}
+
+/* Ton bouton détails (un peu plus “propre”) */
+.agent-incidents-page .details-btn{
+    min-width: 140px;
+}
+
+/* Bouton détails (remplace Bootstrap) */
+.btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border-radius:10px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    transition: all .15s ease;
+    border:1px solid var(--border-light);
+    background: #7ec2ec;
+    color: black;
+}
+
+.btn i{ font-size:14px; color: black; }
+
+.btn-outline{
+    background: transparent;
+    border: 1px solid var(--border-light);
+    color: var(--primary);
+}
+
+.btn-outline:hover{
+    background: rgba(37,99,235,0.08);
+    border-color: var(--primary);
+    transform: translateY(-1px);
+}
+
+.btn-outline:active{
+    transform: translateY(0);
+}
+
+.btn-outline:focus{
+    outline:none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
 
 * {
     margin: 0;

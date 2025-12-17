@@ -9,18 +9,149 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
           rel="stylesheet">
 
-    <!-- CSS commun -->
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+
+    <style>
+        /* pour éviter "content centré" du dashboard.css */
+        .content.content-top{
+            align-items:flex-start !important;
+            justify-content:flex-start !important;
+        }
+
+        .kpi-grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+            gap:16px;
+            margin-bottom:16px;
+        }
+        .kpi-card{
+            background: var(--bg-white, #fff);
+            border: 1px solid var(--border-light, #e2e8f0);
+            border-radius: 12px;
+            padding: 16px;
+        }
+        .kpi-top{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+        }
+        .kpi-label{ color: var(--text-gray, #64748b); font-size:13px; }
+        .kpi-value{ font-size:28px; font-weight:800; color: var(--text-dark, #1e293b); margin-top:4px; }
+
+        .section-title{
+            font-size:16px;
+            font-weight:700;
+            color: var(--text-dark, #1e293b);
+            margin: 10px 0 12px 0;
+            display:flex;
+            gap:8px;
+            align-items:center;
+        }
+
+        details.dept{
+            background: var(--bg-white, #fff);
+            border: 1px solid var(--border-light, #e2e8f0);
+            border-radius: 12px;
+            padding: 0;
+            margin-bottom: 12px;
+            overflow:hidden;
+        }
+        details.dept > summary{
+            list-style:none;
+            cursor:pointer;
+            padding: 14px 16px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+        }
+        details.dept > summary::-webkit-details-marker{ display:none; }
+
+        .dept-left{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            font-weight:700;
+        }
+        .dept-badges{
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+            color: var(--text-gray, #64748b);
+            font-size:13px;
+        }
+        .dept-body{
+            padding: 0 16px 16px 16px;
+        }
+
+        .admin-card{
+            border: 1px solid var(--border-light, #e2e8f0);
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 12px;
+            background: #fff;
+        }
+        .admin-head{
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            gap:12px;
+        }
+        .admin-name{
+            font-weight:800;
+            color: var(--text-dark, #1e293b);
+        }
+        .muted{
+            color: var(--text-gray, #64748b);
+            font-size:13px;
+            margin-top:4px;
+        }
+        .pill{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size:12px;
+            background: rgba(37,99,235,0.08);
+            color: var(--primary, #2563eb);
+            font-weight:700;
+            white-space:nowrap;
+        }
+
+        table.simple{
+            width:100%;
+            border-collapse:collapse;
+            margin-top:10px;
+            font-size:14px;
+        }
+        table.simple th, table.simple td{
+            padding:10px 8px;
+            border-top: 1px solid var(--border-light, #e2e8f0);
+            text-align:left;
+        }
+        table.simple th{
+            color: var(--text-gray, #64748b);
+            font-size:13px;
+            font-weight:700;
+        }
+
+        .empty-small{
+            padding: 10px 0;
+            color: var(--text-gray, #64748b);
+            font-size:13px;
+        }
+    </style>
 </head>
+
 <body>
 <div class="dashboard-container">
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="logo">
-                <i class="fas fa-crown"></i>
-            </div>
+            <div class="logo"><i class="fas fa-crown"></i></div>
             <div class="app-name">Super Admin</div>
         </div>
 
@@ -31,9 +162,8 @@
                     <span class="menu-text">Tableau de bord</span>
                 </a>
             </li>
-
             <li>
-                <a th:href="@{/superadmin/create-user}">
+                <a th:href="@{/superadmin/create-user}" >
                     <span class="menu-icon"><i class="fas fa-user-plus"></i></span>
                     <span class="menu-text">Créer un compte</span>
                 </a>
@@ -42,20 +172,6 @@
                 <a th:href="@{/superadmin/affectations}">
                     <span class="menu-icon"><i class="fas fa-user-shield"></i></span>
                     <span class="menu-text">Affecter Agents-Admin</span>
-                </a>
-            </li>
-
-            <li>
-                <a href="#">
-                    <span class="menu-icon"><i class="fas fa-users-cog"></i></span>
-                    <span class="menu-text">Gérer les comptes</span>
-                </a>
-            </li>
-
-            <li>
-                <a href="#">
-                    <span class="menu-icon"><i class="fas fa-cog"></i></span>
-                    <span class="menu-text">Paramètres globaux</span>
                 </a>
             </li>
         </ul>
@@ -72,6 +188,7 @@
 
     <!-- MAIN CONTENT -->
     <main class="main-content">
+
         <!-- NAVBAR -->
         <nav class="navbar">
             <div class="navbar-left">
@@ -82,45 +199,143 @@
             </div>
 
             <div class="navbar-right">
-
                 <div class="navbar-actions">
                     <div class="action-icon">
                         <i class="fas fa-bell"></i>
                         <span class="notification-badge"></span>
                     </div>
 
-                    <!-- Profil super admin dynamique -->
                     <div class="user-profile">
                         <div class="user-avatar" th:text="${initials}">SA</div>
-
                         <div class="user-info">
                             <div class="user-name" th:text="${fullName}">Super Admin</div>
                             <div class="user-role" th:text="${roleLabel}">Super administrateur</div>
                         </div>
-
-                        <i class="fas fa-chevron-down"
-                           style="font-size: 12px; color: var(--text-gray);"></i>
+                        <i class="fas fa-chevron-down" style="font-size: 12px; color: var(--text-gray);"></i>
                     </div>
                 </div>
             </div>
         </nav>
 
-        <!-- CONTENU : écran d’accueil -->
-        <div class="content">
-            <div class="empty-state">
-                <div class="empty-icon">
-                    <i class="fas fa-crown"></i>
+        <!-- CONTENT -->
+        <div class="content content-top">
+            <div style="max-width:1100px;margin:0 auto;width:100%;">
+
+                <!-- KPIs : Totaux -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-top">
+                            <div>
+                                <div class="kpi-label">Total administrateurs</div>
+                                <div class="kpi-value" th:text="${data.totalAdmins}">0</div>
+                            </div>
+                            <i class="fas fa-user-shield" style="font-size:22px;color:var(--primary, #2563eb)"></i>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-top">
+                            <div>
+                                <div class="kpi-label">Total agents</div>
+                                <div class="kpi-value" th:text="${data.totalAgents}">0</div>
+                            </div>
+                            <i class="fas fa-users" style="font-size:22px;color:var(--primary, #2563eb)"></i>
+                        </div>
+                    </div>
                 </div>
-                <h2 class="empty-title">Bienvenue, Super administrateur</h2>
-                <p class="empty-description">
-                    Depuis cet espace, vous pouvez gérer les administrateurs, les agents municipaux
-                    et la configuration globale de la plateforme.
-                    <br><br>
-                    Utilisez le menu à gauche pour commencer, par exemple :
-                    <br>• Créer un compte (administrateur ou agent)
-                    <br>• Gérer les comptes existants
-                    <br>• Configurer les paramètres globaux
-                </p>
+
+                <!-- KPIs : Agents par département -->
+                <div class="section-title">
+                    <i class="fas fa-building"></i> Agents par département
+                </div>
+
+                <div class="kpi-grid">
+                    <div class="kpi-card" th:each="d : ${data.departements}">
+                        <div class="kpi-top">
+                            <div>
+                                <div class="kpi-label" th:text="${d.departement}">DEPARTEMENT</div>
+                                <div class="kpi-value" th:text="${d.nbAgents}">0</div>
+                                <div class="muted">
+                                    Admins : <b th:text="${d.nbAdmins}">0</b>
+                                </div>
+                            </div>
+                            <i class="fas fa-chart-bar" style="font-size:22px;color:var(--primary, #2563eb)"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Détails -->
+                <div class="section-title" style="margin-top:18px;">
+                    <i class="fas fa-sitemap"></i> Administrateurs & agents par département
+                </div>
+
+                <details class="dept" th:each="d : ${data.departements}"
+                         th:attr="open=${d.nbAdmins > 0 ? 'open' : null}">
+                    <summary>
+                        <div class="dept-left">
+                            <i class="fas fa-layer-group" style="color:var(--primary, #2563eb)"></i>
+                            <span th:text="${d.departement}">DEPARTEMENT</span>
+                        </div>
+                        <div class="dept-badges">
+                            <span><b th:text="${d.nbAdmins}">0</b> admin(s)</span>
+                            <span><b th:text="${d.nbAgents}">0</b> agent(s)</span>
+                            <span style="color:var(--text-gray,#64748b)"><i class="fas fa-chevron-down"></i></span>
+                        </div>
+                    </summary>
+
+                    <div class="dept-body">
+
+                        <div class="empty-small" th:if="${d.admins == null or d.admins.isEmpty()}">
+                            Aucun administrateur dans ce département.
+                        </div>
+
+                        <div class="admin-card" th:each="row : ${d.admins}">
+                            <div class="admin-head">
+                                <div>
+                                    <div class="admin-name">
+                                        <i class="fas fa-user-shield"></i>
+                                        <span th:text="${row.admin.nomComplet}">Admin Nom</span>
+                                    </div>
+                                    <div class="muted">
+                                        <i class="fas fa-envelope"></i>
+                                        <span th:text="${row.admin.email}">email</span>
+                                        &nbsp; • &nbsp;
+                                        <i class="fas fa-phone"></i>
+                                        <span th:text="${row.admin.phone}">phone</span>
+                                    </div>
+                                </div>
+
+                                <span class="pill">
+                                    <i class="fas fa-users"></i>
+                                    <span th:text="${row.nbAgents}">0</span> agent(s)
+                                </span>
+                            </div>
+
+                            <div class="empty-small" th:if="${row.agents == null or row.agents.isEmpty()}">
+                                Aucun agent affecté à cet administrateur.
+                            </div>
+
+                            <table class="simple" th:if="${row.agents != null and !row.agents.isEmpty()}">
+                                <thead>
+                                <tr>
+                                    <th>Agent</th>
+                                    <th>Email</th>
+                                    <th>Téléphone</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="a : ${row.agents}">
+                                    <td th:text="${a.nomComplet}">Nom</td>
+                                    <td th:text="${a.email}">email</td>
+                                    <td th:text="${a.phone}">phone</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </details>
+
             </div>
         </div>
     </main>
@@ -129,27 +344,9 @@
 <script>
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.querySelector('.sidebar');
-
-    if (menuToggle) {
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-        });
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', () => sidebar.classList.toggle('active'));
     }
-
-    const menuItems = document.querySelectorAll('.sidebar-menu a');
-    menuItems.forEach(item => {
-        item.addEventListener('click', () => {
-            menuItems.forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-
-            const menuText = item.querySelector('.menu-text').textContent;
-            document.querySelector('.page-title').textContent = menuText;
-
-            if (window.innerWidth <= 1024) {
-                sidebar.classList.remove('active');
-            }
-        });
-    });
 </script>
 </body>
 </html>

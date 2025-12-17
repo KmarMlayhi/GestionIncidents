@@ -155,7 +155,7 @@
             <div class="logo">
                 <i class="fas fa-city"></i>
             </div>
-            <div class="app-name">Espace citoyen</div>
+            <div class="app-name"th:href="@{/citoyen/dashboard}">Espace citoyen</div>
         </div>
 
         <ul class="sidebar-menu">
@@ -180,12 +180,7 @@
                 </a>
             </li>
 
-            <li>
-                <a th:href="@{/citoyen/carte}">
-                    <span class="menu-icon"><i class="fas fa-map-marked-alt"></i></span>
-                    <span class="menu-text">Carte des incidents</span>
-                </a>
-            </li>
+
 
             <li>
                 <a th:href="@{/citoyen/profil}">
@@ -194,12 +189,6 @@
                 </a>
             </li>
 
-            <li>
-                <a th:href="@{/citoyen/notifications}">
-                    <span class="menu-icon"><i class="fas fa-bell"></i></span>
-                    <span class="menu-text">Notifications</span>
-                </a>
-            </li>
         </ul>
 
         <div class="sidebar-footer">
@@ -224,11 +213,6 @@
             </div>
 
             <div class="navbar-right">
-                <div class="search-container">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" class="search-input" placeholder="Rechercher un incident...">
-                </div>
-
                 <div class="navbar-actions">
                     <div class="action-icon">
                         <i class="fas fa-bell"></i>
