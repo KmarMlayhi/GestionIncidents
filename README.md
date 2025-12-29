@@ -83,7 +83,7 @@ Année universitaire : 2025 – 2026
 
 # Sécurité
 
-* Authentification basée sur Spring Security (JBDC)
+* Authentification basée sur Spring Security (JDBC)
 * Gestion des rôles : `CITOYEN`, `AGENT`, `ADMIN`, `SUPER_ADMIN`
 * Accès restreint aux fonctionnalités selon le rôle
 * Déconnexion via endpoint `/logout`
@@ -93,7 +93,7 @@ Année universitaire : 2025 – 2026
 # Lancement du projet
 
 1. Cloner le projet
-2. Configurer la base de données dans `application.properties`
+2. Configurer la base de données dans les variables d'environnment (run -> edit configurations -> modify option -> environment variable)
 3. Créer la base MySQL : Création du base de données "Gestion incidents" dans mysql
 5. Lancer l’application
 
@@ -108,3 +108,6 @@ http://localhost/phpmyadmin/
 ```
 http://localhost:8080/login
 ```
+## DevOps 
+# Configuration (Variables d’environnement)
+Les secrets (DB, mail...) **ne doivent pas être commit** --> Doivent figurés dans le fichier .env et ce fichier dans .gitignore
