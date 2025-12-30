@@ -2,12 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches:
-      - dev
-      - main
+    branches: [dev, main]
   pull_request:
-    branches:
-      - dev
+    branches: [dev]
 
 jobs:
   build-and-test:
@@ -28,5 +25,17 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build & run tests
-        run: mvn clean test
+      #  Build = compilation + packaging (JAR)
+      - name: Build (package jar)
+        run: mvn -B -DskipTests clean package
+
+      #  Tests automatisés
+      - name: Run tests
+        run: mvn -B test
+
+      #  Publication de l’artefact (JAR)
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: target/*.jar
