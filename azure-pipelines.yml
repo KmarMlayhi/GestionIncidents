@@ -1,0 +1,47 @@
+trigger:
+  branches:
+    include:
+      - dev
+      - main
+
+pr:
+  branches:
+    include:
+      - dev
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  # 1) BUILD + PACKAGING (sans tests)
+  - task: Maven@4
+    inputs:
+      mavenPomFile: 'pom.xml'
+      goals: 'clean package -DskipTests'
+      javaHomeOption: 'JDKVersion'
+      jdkVersionOption: 'default'
+      jdkArchitectureOption: 'x64'
+
+  # 2) TESTS automatisés
+  - task: Maven@4
+    inputs:
+      mavenPomFile: 'pom.xml'
+      goals: 'test'
+      publishJUnitResults: true
+      testResultsFiles: '**/surefire-reports/TEST-*.xml'
+      javaHomeOption: 'JDKVersion'
+      jdkVersionOption: 'default'
+      jdkArchitectureOption: 'x64'
+
+  # 3) Publier l'artefact (JAR)
+  - task: CopyFiles@2
+    inputs:
+      sourceFolder: '$(System.DefaultWorkingDirectory)/target'
+      contents: '*.jar'
+      targetFolder: '$(Build.ArtifactStagingDirectory)'
+
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: '$(Build.ArtifactStagingDirectory)'
+      artifact: 'jar'
+      publishLocation: 'pipeline'
