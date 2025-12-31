@@ -1,0 +1,30 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: gestionincidents-db
+    environment:
+      MYSQL_DATABASE: gestion_incidents
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    container_name: gestionincidents-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env.docker
+
+volumes:
+  db_data:
