@@ -3,6 +3,8 @@ package com.example.gestionincidents;
 import javax.sql.DataSource;
 import com.example.gestionincidents.security.CustomAuthenticationSuccessHandler;
 import javax.sql.DataSource;
+
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -58,22 +60,23 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
     @Bean
-    public JdbcUserDetailsManager jdbcUserDetailsManager(DataSource dataSource, PasswordEncoder encoder) {
-        JdbcUserDetailsManager users = new JdbcUserDetailsManager(dataSource);
+    public CommandLineRunner createDefaultSuperAdmin(JdbcUserDetailsManager users, PasswordEncoder encoder) {
+        return args -> {
+            if (!users.userExists("superadmin")) {
+                UserDetails admin = User.withUsername("superadmin")
+                        .password(encoder.encode("super123"))
+                        .roles("SUPER_ADMIN")
+                        .build();
 
-        // Créer un admin par défaut si pas encore présent
-        if (!users.userExists("superadmin")) {
-            UserDetails admin = User.withUsername("superadmin")
-                    .password(encoder.encode("super123"))
-                    .roles("SUPER_ADMIN")
-                    .build();
-
-            users.createUser(admin);
-            System.out.println(">>> SUPER ADMIN JDBC créé : superadmin  / super123");
-        }
-
-        return users;
+                users.createUser(admin);
+                System.out.println(">>> SUPER ADMIN JDBC créé : superadmin / super123");
+            }
+        };
     }
+    @Bean
+    public JdbcUserDetailsManager jdbcUserDetailsManager(DataSource dataSource) {
+        return new JdbcUserDetailsManager(dataSource);
+    }
+
 }
