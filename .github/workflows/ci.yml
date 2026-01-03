@@ -31,7 +31,7 @@ jobs:
 
       #  Tests automatisés
       - name: Run tests
-        run: mvn -B test
+        run: mvn -B test -Dspring.profiles.active=test
 
       #  Publication de l’artefact (JAR)
       - name: Upload JAR artifact
