@@ -21,6 +21,16 @@ public class IncidentWorkflowService {
         this.utilisateurRepository = utilisateurRepository;
         this.mailService = mailService;
     }
+    // Ajouter ces getters pour les tests
+    protected IncidentRepository getIncidentRepository() {
+        return incidentRepository;
+    }
+
+    protected UtilisateurRepository getUtilisateurRepository() {
+        return utilisateurRepository;
+    }
+
+
 
     @Transactional
     public void assignerIncident(Long incidentId, Long agentId, String adminEmail) {
