@@ -65,6 +65,19 @@ Année universitaire : 2025 – 2026
 ## DevOps Travail réalisé par :
 équipe de Dev: ** Kmar Mlayhi ** et ** Oumaima Mzoughi ** 
 équipe de Test: ** Ons Fitouri ** et ** Siwar Labassi **
+
+## Répartition du travail :
+
+Kmar : Dockerisation
+
+Oumaima : Intégration Continue (CI)
+
+Ons : Tests d’intégration
+
+Siwar : Tests unitaires
+
+Toute l’équipe : CD et déploiement sur Azure
+
 ## Présentation du Projet
 Le projet utilise Docker pour l’exécution en conteneur et un pipeline CI/CD basé sur GitHub Actions pour l’intégration continue et le déploiement automatique. L’infrastructure de déploiement repose sur Microsoft Azure DevOps, utilisé pour la création de la machine virtuelle et le déploiement de l’application en environnement de production.
 ## Réalisation
